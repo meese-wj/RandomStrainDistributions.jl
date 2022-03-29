@@ -38,11 +38,42 @@ above:
 """
 abstract type PhysicalVector end
 
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+Check for equality between two PhysicalVectors. Note that Base.:(==) is not used 
+for issues with immutability and equality.
+"""
 equal(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+Add two PhysicalVectors together.
+"""
 Base.:+(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+Add two PhysicalVectors together in-place. (Here A is modified, not B).
+"""
 add!(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+Scalar multiplication of a PhysicalVector.
+"""
 Base.:*(λ, A::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+In-place scalar multiplication of a PhysicalVector.
+"""
 multiply!(λ, A::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
+"""
+#= REQUIRED FOR PhysicalVector INTERFACE =#
+
+Scalar (dot) product of two PhysicalVectors.
+"""
 ⋅(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 
 # These are functions that follow the interface but are not

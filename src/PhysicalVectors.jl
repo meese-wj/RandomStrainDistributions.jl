@@ -2,8 +2,6 @@ module PhysicalVectors
 
 # Exports from PhysicalVector interface
 export PhysicalVector, equal, add!, multiply!, ⋅, subtract!, divide!, dot, magnitude, magnitude2, normalize, normalize!, unit, unit!
-# Exports from Vector2D implementation
-export Vector2D, equal, add!, multiply!
 
 """
 This is an interface for vectors used in physics.
@@ -44,113 +42,62 @@ abstract type PhysicalVector end
 Check for equality between two PhysicalVectors. Note that Base.:(==) is not used 
 for issues with immutability and equality.
 """
-equal(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+equal(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 """
 #= REQUIRED FOR PhysicalVector INTERFACE =#
 
 Add two PhysicalVectors together.
 """
-Base.:+(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+Base.:+(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 """
 #= REQUIRED FOR PhysicalVector INTERFACE =#
 
 Add two PhysicalVectors together in-place. (Here A is modified, not B).
 """
-add!(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+add!(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 """
 #= REQUIRED FOR PhysicalVector INTERFACE =#
 
 Scalar multiplication of a PhysicalVector.
 """
-Base.:*(λ, A::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
+Base.:*(λ, A::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
 """
 #= REQUIRED FOR PhysicalVector INTERFACE =#
 
 In-place scalar multiplication of a PhysicalVector.
 """
-multiply!(λ, A::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
+multiply!(λ, A::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
 """
 #= REQUIRED FOR PhysicalVector INTERFACE =#
 
 Scalar (dot) product of two PhysicalVectors.
 """
-⋅(A::T, B::T) where {T <: PhysicalVector} = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+⋅(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 
-# These are functions that follow the interface but are not
-# necessary to define for subtypes of PhysicalVector
-Base.:*(A::T, λ) where {T <: PhysicalVector} = λ * A
-multiply!(A::T, λ) where {T <: PhysicalVector} = multiply!(λ, A) 
-Base.:-(A::T, B::T) where {T <: PhysicalVector} = A + (-1 * B)
-Base.:/(A::T, λ) where {T <: PhysicalVector} = A * (1 / λ)
-divide!(A::T, λ) where {T <: PhysicalVector} = multiply!(A, 1 / λ)
-dot(A::T, B::T) where {T <: PhysicalVector} = A ⋅ B 
-magnitude2(A::T) where {T <: PhysicalVector} = A ⋅ A 
-magnitude(A::T) where {T <: PhysicalVector} = sqrt(magnitude2(A))
-normalize(A::T) where {T <: PhysicalVector} = A / magnitude(A) 
-normalize!(A::T) where {T <: PhysicalVector} = divide!(A, magnitude(A)) 
-unit(A::T) where {T <: PhysicalVector} = normalize(A) 
-unit!(A::T) where {T <: PhysicalVector} = normalize!(A) 
+#= ========================================================================================= =#
+#  These are functions that follow the interface but are not
+#  necessary to define for subtypes of PhysicalVector
+#= ========================================================================================= =#
+"""
+Scalar multiplication of a PhysicalVector. Alias for Base.:*(λ, ::PhysicalVector)
+"""
+Base.:*(A::PhysicalVector, λ) = λ * A
+multiply!(A::PhysicalVector, λ) = multiply!(λ, A) 
+Base.:-(A::PhysicalVector, B::PhysicalVector) = A + (-1 * B)
+Base.:/(A::PhysicalVector, λ) = A * (1 / λ)
+divide!(A::PhysicalVector, λ) = multiply!(A, 1 / λ)
+dot(A::PhysicalVector, B::PhysicalVector) = A ⋅ B 
+magnitude2(A::PhysicalVector) = A ⋅ A 
+magnitude(A::PhysicalVector) = sqrt(magnitude2(A))
+normalize(A::PhysicalVector) = A / magnitude(A) 
+normalize!(A::PhysicalVector) = divide!(A, magnitude(A)) 
+unit(A::PhysicalVector) = normalize(A) 
+unit!(A::PhysicalVector) = normalize!(A) 
 
-using StaticArrays
-
-"""
-Wrapper around StaticArrays.MVector{2,T} for simpler use in 
-physics applications.
-"""
-mutable struct Vector2D{T <: Real} <: PhysicalVector
-    vec::MVector{2,T}
-end
-
-Vector2D(x::T, y::T) where {T <: Real} = Vector2D{T}( MVector{2,T}(x,y) )
-
-"""
-2D Vector Equality based on value equality in the vectors
-"""
-equal(A::Vector2D, B::Vector2D) = prod(A.vec .== B.vec)
-"""
-2D Vector Addition
-"""
-Base.:+(A::Vector2D, B::Vector2D) = Vector2D(A.vec[1] + B.vec[1], A.vec[2] + B.vec[2])
-"""
-2D Vector Scalar Multiplication
-"""
-Base.:*(λ, A::Vector2D) = Vector2D( λ * A.vec[1], λ * A.vec[2] )
-"""
-2D Vector Scalar Product
-"""
-⋅(A::Vector2D, B::Vector2D) = A.vec[1] * B.vec[1] + A.vec[2] * B.vec[2]
-
-"""
-In-place Vector2D addition. 
-
-Examples:
-
-    A = [1., 2.]; B = [3., 4.]
-    add!(A, B)
-    A = [4., 6.]
-"""
-add!(A::Vector2D, B::Vector2D) = A.vec .+= B.vec
-
-"""
-In-place Vector2D addition. 
-
-Examples:
-
-    A = [1., 2.]; B = [3., 4.]
-    subract!(A, B)
-    A = [-2., -2.]
-"""
-subtract!(A::Vector2D, B::Vector2D) = A.vec .-= B.vec
-
-"""
-In-place Vector2D scalar multiplication. 
-
-Examples:
-
-    A = [1., 2.]; λ = 2.
-    multiply!(λ, A)
-    A = [2., 4.]
-"""
-multiply!(λ, A::Vector2D) = A.vec .*= λ
+#= ========================================================================================= =#
+#  Include implementations of the PhysicalVector interface.
+#  Each implementation file is included and contains it's own export list.
+#= ========================================================================================= =#
+include("Vectors2D.jl")
 
 end # module PhysicalVectors

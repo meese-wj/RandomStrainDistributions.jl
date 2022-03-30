@@ -4,7 +4,7 @@ CurrentModule = RandomStrainDistributions
 
 # RandomStrainDistributions
 
-Documentation for [RandomStrainDistributions](https://github.com/meesewj/RandomStrainDistributions.jl).
+Documentation for [RandomStrainDistributions](https://github.com/meese-wj/RandomStrainDistributions.jl).
 
 ```@index
 ```

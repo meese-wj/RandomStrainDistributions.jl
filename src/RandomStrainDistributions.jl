@@ -1,7 +1,7 @@
 module RandomStrainDistributions
 using Reexport
 
-include("PhysicalVectors.jl")
+include("PhysicalVectors/PhysicalVectors.jl")
 @reexport using .PhysicalVectors
 # Write your package code here.
 

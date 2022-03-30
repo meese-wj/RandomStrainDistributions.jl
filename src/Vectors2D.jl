@@ -15,22 +15,66 @@ end
 #  Struct constructors
 #= ========================================================================================= =#
 """
-Vector2D constructor from an AbstractVector
+    Vector2D(arr::AbstractArray{Real, 1})
+
+Copy constructor from an `AbstractVector`
+
+# Examples
+
+```jldoctest
+julia> Vector2D([1., 2])
+Vector2D{Float64}([1.0, 2.0])
+```
 """
 Vector2D(arr::AbstractArray{T,1}) where {T <: Real} = Vector2D{T}( MVector{2,T}(arr[1], arr[2]) )
+
 """
-Vector2D constructor from a pair x and y of the same type T 
+    Vector2D(x::T, y::T) where {T <: Real}
+
+Copy constructor from a pair x and y _explicitly_ of the same type `T <: Real` 
+
+# Examples
+
+```jldoctest
+julia> Vector2D(1., 2.)
+Vector2D{Float64}([1.0, 2.0])
+```
 """
 Vector2D(x::T, y::T) where {T <: Real} = Vector2D{T}( MVector{2,T}(x,y) )
+
 """
-Vector2D constructor from a pair x and y of potentially different types.
-This function makes a call to Vector2D(::Tuple{S, T}) where {S <: Real, T <: Real}.
+    Vector2D(x::Real, y::Real)
+
+Copy constructor from a pair x and y of potentially different `Real` types.
+
+# Additional Information
+This function makes a call to `Vector2D(::Tuple{S, T})` where `{S <: Real, T <: Real}`.
+
+# Examples
+
+```jldoctest
+julia> Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+```
 """
 Vector2D(x::Real, y::Real) = Vector2D((x, y))
+
 """
-Vector2D constructor from a tuple of reals (x, y). In the case that the
-elements are of different types, they are first passed through promote(x, y)
-and the common-type values are stored in the output.
+    Vector2D(tup::Tuple{S, T}) where {S <: Real, T <: Real}
+
+Copy constructor from a tuple of reals `tup === (x::Real, y::Real)`. 
+
+# Additional Information
+In the case that the elements are of different types, they are first
+passed through `promote(x, y)` and the common-type values are stored
+in the output.
+
+# Examples
+
+```jldoctest
+julia> Vector2D((1, 2.))
+Vector2D{Float64}([1.0, 2.0])
+```
 """
 function Vector2D(tup::Tuple{S, T}) where {S <: Real, T <: Real}
     vals = promote(tup...)
@@ -41,51 +85,157 @@ end
 #  Interface requirement definitions.
 #= ========================================================================================= =#
 """
-2D Vector Equality based on value equality in the vectors
+    equal(A::Vector2D, B::Vector2D)
+
+Vector2D _equality_ based on component-wise equality.
+
+# Additional Information
+Use this function for equality instead of `==` which defaults to object _egality_ since
+`Vector2D` is mutable.
+
+# Examples
+
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> B = Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> equal(A, B)
+true
+```
 """
 equal(A::Vector2D, B::Vector2D) = prod(A.vec .== B.vec)
+
 """
-2D Vector Addition
+    +(A::Vector2D, B::Vector2D) -> Vector2D
+
+Addition for `Vector2D`. Includes a copy constructor.
+
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> B = Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> A + B
+Vector2D{Float64}([2.0, 4.0])
+```
 """
-Base.:+(A::Vector2D, B::Vector2D) = Vector2D(A.vec[1] + B.vec[1], A.vec[2] + B.vec[2])
+Base.:+(A::Vector2D, B::Vector2D) = Vector2D(A.vec .+ B.vec)
+
 """
-2D Vector Scalar Multiplication
+    *(λ, A::Vector2D) -> Vector2D
+
+Multiplication by a scalar `λ` for `Vector2D`. Includes a copy constructor.
+
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> λ = 2.
+2.0
+
+julia> λ * A
+Vector2D{Float64}([2.0, 4.0])
+```
 """
 Base.:*(λ, A::Vector2D) = Vector2D( λ * A.vec[1], λ * A.vec[2] )
+
 """
-2D Vector Scalar Product
+    ⋅(A::Vector2D, B::Vector2D)
+
+Scalar product, i.e. dot product, for `Vector2D`. 
+
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> B = Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> A ⋅ B
+5.0
+```
 """
 ⋅(A::Vector2D, B::Vector2D) = A.vec[1] * B.vec[1] + A.vec[2] * B.vec[2]
 
 """
-In-place Vector2D addition. 
+    add!(A::Vector2D, B::Vector2D) -> nothing
 
-Examples:
+In-place addition for `Vector2D`. The first argument, `A`, is modified.
 
-    A = [1., 2.]; B = [3., 4.]
-    add!(A, B)
-    A = [4., 6.]
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> B = Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> add!(A, B)
+
+julia> A 
+Vector2D{Float64}([2.0, 4.0])
+
+julia> B 
+Vector2D{Float64}([1.0, 2.0])
+```
 """
-add!(A::Vector2D, B::Vector2D) = A.vec .+= B.vec
+function add!(A::Vector2D, B::Vector2D)
+    A.vec .+= B.vec
+    return nothing
+end
 
 """
-In-place Vector2D addition. 
+    subtract!(A::Vector2D, B::Vector2D) -> nothing
 
-Examples:
+In-place subtraction for `Vector2D`. The first argument, `A`, is modified.
 
-    A = [1., 2.]; B = [3., 4.]
-    subract!(A, B)
-    A = [-2., -2.]
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> B = Vector2D(1, 2.)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> subtract!(A, B)
+
+julia> A 
+Vector2D{Float64}([0.0, 0.0])
+
+julia> B 
+Vector2D{Float64}([1.0, 2.0])
+```
 """
-subtract!(A::Vector2D, B::Vector2D) = A.vec .-= B.vec
+function subtract!(A::Vector2D, B::Vector2D)
+    A.vec .-= B.vec
+    return nothing
+end
 
 """
-In-place Vector2D scalar multiplication. 
+    subtract!(A::Vector2D, B::Vector2D) -> nothing
 
-Examples:
+In-place multiplication by a scalar for `Vector2D`. The first argument, `A`, is modified.
 
-    A = [1., 2.]; λ = 2.
-    multiply!(λ, A)
-    A = [2., 4.]
+```jldoctest
+julia> A = Vector2D(1., 2)
+Vector2D{Float64}([1.0, 2.0])
+
+julia> λ = 2.
+2.
+
+julia> multiply!(A, λ)
+
+julia> A 
+Vector2D{Float64}([2.0, 4.0])
+
+julia> λ
+2.0
+```
 """
-multiply!(λ, A::Vector2D) = A.vec .*= λ
+function multiply!(A::Vector2D, λ)
+    A.vec .*= λ
+    return nothing
+end

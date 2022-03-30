@@ -215,7 +215,7 @@ function subtract!(A::Vector2D, B::Vector2D)
 end
 
 """
-    subtract!(A::Vector2D, B::Vector2D) -> nothing
+    multiply!(A::Vector2D, λ) -> nothing
 
 In-place multiplication by a scalar for `Vector2D`. The first argument, `A`, is modified.
 
@@ -224,7 +224,7 @@ julia> A = Vector2D(1., 2)
 Vector2D{Float64}([1.0, 2.0])
 
 julia> λ = 2.
-2.
+2.0
 
 julia> multiply!(A, λ)
 

@@ -10,5 +10,5 @@ Documentation for [RandomStrainDistributions](https://github.com/meesewj/RandomS
 ```
 
 ```@autodocs
-Modules = [RandomStrainDistributions]
+Modules = [RandomStrainDistributions, RandomStrainDistributions.PhysicalVectors]
 ```

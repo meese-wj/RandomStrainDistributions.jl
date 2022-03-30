@@ -16,7 +16,7 @@ DocMeta.setdocmeta!(RandomStrainDistributions, :DocTestSetup, :(using RandomStra
 makedocs(;
     modules=[RandomStrainDistributions],
     authors="W. Joe Meese <meese022@umn.edu> and contributors",
-    repo="https://github.com/meesewj/RandomStrainDistributions.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/meese-wj/RandomStrainDistributions.jl/blob/{commit}{path}#{line}",
     sitename="RandomStrainDistributions.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",

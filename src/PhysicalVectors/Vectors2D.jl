@@ -239,3 +239,9 @@ function multiply!(A::Vector2D, λ)
     A.vec .*= λ
     return nothing
 end
+
+#= ========================================================================================= =#
+#  Includes for the Vector2D struct.
+#  Each file **must** contain it's own export list.
+#= ========================================================================================= =#
+include("PeriodicBoundaryConditionHelpers.jl")

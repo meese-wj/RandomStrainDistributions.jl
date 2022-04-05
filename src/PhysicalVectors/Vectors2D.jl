@@ -184,7 +184,7 @@ Vector2D{Float64}([1.0, 2.0])
 ```
 """
 function add!(A::Vector2D, B::Vector2D)
-    A.vec .+= B.vec
+    broadcast!(+, A.vec, A.vec, B.vec)
     return nothing
 end
 
@@ -210,9 +210,7 @@ Vector2D{Float64}([1.0, 2.0])
 ```
 """
 function subtract!(A::Vector2D, B::Vector2D)
-    A.vec[1] -= B.vec[1]
-    A.vec[2] -= B.vec[2]
-    # A.vec .-= B.vec
+    broadcast!(-, A.vec, A.vec, B.vec)
     return nothing
 end
 
@@ -238,7 +236,7 @@ julia> λ
 ```
 """
 function multiply!(A::Vector2D, λ)
-    A.vec .*= λ
+    broadcast!(*, A.vec, A.vec, λ)
     return nothing
 end
 

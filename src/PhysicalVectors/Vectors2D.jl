@@ -160,7 +160,13 @@ julia> A ⋅ B
 5.0
 ```
 """
-⋅(A::Vector2D, B::Vector2D) = sum( broadcast(*, A.vec, B.vec) )
+function ⋅(A::Vector2D, B::Vector2D)
+    ans = zero(eltype(A.vec))
+    for idx in eachindex(A.vec, B.vec)
+        ans += A.vec[idx] * B.vec[idx]
+    end
+    return ans
+end
 
 """
     add!(A::Vector2D, B::Vector2D) -> nothing

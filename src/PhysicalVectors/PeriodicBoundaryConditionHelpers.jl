@@ -1,4 +1,4 @@
-export subtract_PBC, subtract_PBC!
+export vector_diff!, subtract_PBC, subtract_PBC!
 
 """
     vector_diff!( A::PhysicalVector, B::PhysicalVector; diff!::Function )
@@ -8,7 +8,7 @@ Wrapper around the in-place difference function `diff!`.
 # Additional Information
 To be used when geometry, etc., may change the definition of the `PhysicalVector` `subtract!`.
 """
-vector_diff!( a::PhysicalVector, b::PhysicalVector; diff!::Function = subtract! ) = diff!(a, b)
+vector_diff!( a::PhysicalVector, b::PhysicalVector; diff::Function = subtract! ) = diff(a, b)
 
 """
     subtract_PBC( x1::Real, x0::Real; axis_size )

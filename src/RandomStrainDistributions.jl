@@ -77,8 +77,7 @@ julia> A
 """
 function bxg_shears!( shears::MVector{2}, eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:-, source_r::Vector2D = Vector2D(0.,0.) )
     vector_diff!(eval_r, source_r; diff = diff)
-    shears[1] = b1g_shear( eval_r, bob )
-    shears[2] = b2g_shear( eval_r, bob )
+    broadcast!( (x, v) -> v, shears, shears, ( b1g_shear(eval_r, bob), b2g_shear(eval_r, bob) ) )
     return nothing
 end
 

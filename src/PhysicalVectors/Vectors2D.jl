@@ -124,7 +124,7 @@ julia> A + B
 Vector2D{Float64}([2.0, 4.0])
 ```
 """
-Base.:+(A::Vector2D, B::Vector2D) = Vector2D(A.vec .+ B.vec)
+Base.:+(A::Vector2D, B::Vector2D) = Vector2D( broadcast(+, A.vec, B.vec) )
 
 """
     *(λ, A::Vector2D) -> Vector2D
@@ -142,7 +142,7 @@ julia> λ * A
 Vector2D{Float64}([2.0, 4.0])
 ```
 """
-Base.:*(λ, A::Vector2D) = Vector2D( λ * A.vec[1], λ * A.vec[2] )
+Base.:*(λ, A::Vector2D) = Vector2D( broadcast(*, A.vec, λ) )
 
 """
     ⋅(A::Vector2D, B::Vector2D)
@@ -160,7 +160,7 @@ julia> A ⋅ B
 5.0
 ```
 """
-⋅(A::Vector2D, B::Vector2D) = sum( A.vec .* B.vec )
+⋅(A::Vector2D, B::Vector2D) = sum( broadcast(*, A.vec, B.vec) )
 
 """
     add!(A::Vector2D, B::Vector2D) -> nothing

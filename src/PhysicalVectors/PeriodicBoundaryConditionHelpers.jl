@@ -58,7 +58,6 @@ Vector2D{Float64}([4.0, 3.0])
 ```
 """
 function subtract_PBC!( A::Vector2D, B::Vector2D; Lx, Ly = Lx )
-    A.vec[1] = subtract_PBC( A.vec[1], B.vec[1]; axis_size = Lx )
-    A.vec[2] = subtract_PBC( A.vec[2], B.vec[2]; axis_size = Ly )
+    broadcast!( (a, b, ax) -> subtract_PBC(a, b; axis_size=ax), A.vec, A.vec, B.vec, (Lx, Ly) )
     return nothing
 end

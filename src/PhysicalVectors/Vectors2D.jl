@@ -160,7 +160,7 @@ julia> A ⋅ B
 5.0
 ```
 """
-⋅(A::Vector2D, B::Vector2D) = A.vec[1] * B.vec[1] + A.vec[2] * B.vec[2]
+⋅(A::Vector2D, B::Vector2D) = sum( A.vec .* B.vec )
 
 """
     add!(A::Vector2D, B::Vector2D) -> nothing
@@ -210,7 +210,9 @@ Vector2D{Float64}([1.0, 2.0])
 ```
 """
 function subtract!(A::Vector2D, B::Vector2D)
-    A.vec .-= B.vec
+    A.vec[1] -= B.vec[1]
+    A.vec[2] -= B.vec[2]
+    # A.vec .-= B.vec
     return nothing
 end
 

@@ -50,7 +50,7 @@ function b2g_shear( bob::Vector2D, eval_r::Vector2D )
 end
 
 """
-    bxg_shears!(shears::MVector{2}, eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> nothing 
+    bxg_shears!(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
 
 Calculate the two `shears` from the ``B_{1g}`` and ``B_{2g}`` channels from and edge dislocation situated at the `source_r`
 location and aligned along the ``z`` axis with a Burger's vector `bob`.
@@ -75,10 +75,11 @@ julia> A
   0.15915494309189535
 ```
 """
-function bxg_shears!( shears::MVector{2}, eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:-, source_r::Vector2D = Vector2D(0.,0.) )
+function bxg_shears!( eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:-, source_r::Vector2D = Vector2D(0.,0.) )
     vector_diff!(eval_r, source_r; diff = diff)
-    broadcast!( (x, v) -> v, shears, shears, ( b1g_shear(eval_r, bob), b2g_shear(eval_r, bob) ) )
-    return nothing
+    b1g = b1g_shear(eval_r, bob)
+    b2g = b2g_shear(eval_r, bob)
+    return (b1g, b2g)
 end
 
 end # module RandomStrainDistributions

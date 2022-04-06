@@ -52,11 +52,12 @@ end
 """
     bxg_shears!(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
 
-Calculate the two `shears` from the ``B_{1g}`` and ``B_{2g}`` channels from and edge dislocation situated at the `source_r`
-location and aligned along the ``z`` axis with a Burger's vector `bob`.
+Calculate the two shears `(b1g, b2g)` from the ``B_{1g}`` and ``B_{2g}`` channels from and edge dislocation situated at the `source_r`
+location and aligned along the ``z`` axis with a Burger's vector `bob`. 
 
 # Additional Information
-* This function mutates both `shears` and `eval_r`. It should be used in cases where `eval_r` is a temporary vector.
+* This function mutates both and `eval_r`. It should be used in cases where `eval_r` is a temporary vector.
+* The keyword argument `diff <: Function` should be used in cases where `Vector2D` subtraction has a different definition than the normal one expected, for example with periodic boundary conditions.
 
 # Examples
 ```jldocstest
@@ -75,8 +76,8 @@ julia> A
   0.15915494309189535
 ```
 """
-function bxg_shears!( eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:-, source_r::Vector2D = Vector2D(0.,0.) )
-    vector_diff!(eval_r, source_r; diff = diff)
+function bxg_shears!( eval_r::Vector2D, bob::Vector2D; diff::Function = subtract!, source_r::Vector2D = Vector2D(0.,0.) )
+    diff(eval_r, source_r)
     b1g = b1g_shear(eval_r, bob)
     b2g = b2g_shear(eval_r, bob)
     return (b1g, b2g)

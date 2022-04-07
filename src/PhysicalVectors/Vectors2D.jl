@@ -29,6 +29,20 @@ Vector2D{Float64}([1.0, 2.0])
 Vector2D(arr::AbstractArray{T,1}) where {T <: Real} = Vector2D{T}( MVector{2,T}(arr[1], arr[2]) )
 
 """
+    Vector2D(vec::Vector2D)
+
+Copy constructor from an `Vector2D`
+
+# Examples
+
+```jldoctest
+julia> Vector2D( Vector2D([1., 2]) )
+Vector2D{Float64}([1.0, 2.0])
+```
+"""
+Vector2D(vec::Vector2D{T}) where {T <: Real} = Vector2D( vec.vec )
+
+"""
     Vector2D(x::T, y::T) where {T <: Real}
 
 Copy constructor from a pair x and y _explicitly_ of the same type `T <: Real` 

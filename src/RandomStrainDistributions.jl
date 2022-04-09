@@ -9,6 +9,9 @@ include("ShearFunctions.jl")
 
 include("RandomDislocations.jl")
 
+include("DisorderConfigurations.jl")
+@reexport using .DisorderConfigurations
+
 # ===================================================================== #
 #  RandomStrainDistributions module code is below
 # ===================================================================== #

@@ -1,7 +1,7 @@
 using StaticArrays
 
 # Exports from Vector2D implementation
-export Vector2D, equal, add!, multiply!
+export Vector2D, Vector2D!, equal, add!, multiply!
 
 """
 Wrapper around StaticArrays.MVector{2,T} for simpler use in 
@@ -94,6 +94,34 @@ function Vector2D(tup::Tuple{S, T}) where {S <: Real, T <: Real}
     vals = promote(tup...)
     return Vector2D{eltype(vals)}( MVector{2, eltype(vals)}(vals) )
 end
+
+"""
+    Vector2D!(old_vec::Vector2D{P}, new_components::Tuple{S, T}) where {P <: Real, S <: Real, T <: Real}
+
+In-place copy from a tuple of reals `new_components === (x::Real, y::Real)`. 
+
+# Additional Information
+In the case that the elements are of different types, they are first
+passed through `promote(x, y)` and the common-type values are stored
+in the output.
+
+# Examples
+
+```jldoctest
+julia> A = Vector2D((1, 2.))
+Vector2D{Float64}([1.0, 2.0])
+
+julia> Vector2D!(A, (2, 4))
+
+julia> A
+Vector2D{Float64}([2.0, 4.0])
+```
+"""
+function Vector2D!( old_vec::Vector2D{P}, new_components::Tuple{S, T} ) where {P <: Real, S <: Real, T <: Real}
+    vals = convert( Tuple{eltype(old_vec.vec), eltype(old_vec.vec)}, new_components)
+    broadcast!( (x, y) -> y, old_vec.vec, old_vec.vec, vals )
+    return nothing
+end    
 
 #= ========================================================================================= =#
 #  Interface requirement definitions.

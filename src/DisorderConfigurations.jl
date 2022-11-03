@@ -40,8 +40,8 @@ Convenient keyword constructor for the `ShearFromDislocations` type.
 function ShearFromDislocations(; Lx, Ly = Lx, diff )
     axes = (Lx, Ly)
     dislocations = Array{Vector2D, 2}(undef)
-    b1g_field = @SMatrix zeros(Float64, ( Lx, Ly ))
-    b2g_field = @SMatrix zeros(Float64, ( Lx, Ly ))
+    b1g_field = @SMatrix zeros(Float64, Lx, Ly )
+    b2g_field = @SMatrix zeros(Float64, Lx, Ly )
     return ShearFromDislocations( diff, axes, dislocations, @SVector [ b1g_field, b2g_field ] )
 end
 
@@ -68,7 +68,7 @@ function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
 end
 
 function generate_disorder( sfd::ShearFromDislocations )
-    disorder_fields = @SVector [ @SMatrix zeros(Float64, sfd.axes), @SMatrix zeros(Float64, sfd.axes) ]
+    disorder_fields = @SVector [ (@SMatrix zeros(Float64, sfd.axes...)), (@SMatrix zeros(Float64, sfd.axes...)) ]
     generate_disorder!( disorder_fields, sfd )
     return disorder_fields
 end

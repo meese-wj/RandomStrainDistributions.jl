@@ -115,12 +115,17 @@ Alias call to the `RandomDislocation` `collect_dislocations` function.
 
 # Additional Information
 * Note that this distribution will not allow for configurations with zero dislocations or for a number of dislocations larger than the `system_size`.
-* This keyword constructor assumes that the `rand_num_dis` is a truncated `Binomial` `Distribution` on the interval ``[1, Lx \\times Ly]`` when `truncated == true`.
+* The number of dislocations is constrained to be even only so as to have a net-zero topological charge.
+* This keyword constructor assumes that the `rand_num_dis` is a truncated `Binomial` `Distribution` on the interval ``{2, 4, ..., Lx \\times Ly}`` when `truncated == true`.
 """
 function collect_dislocations( rdd::RandomDislocationDistribution )
     num_dis = rand(rdd.rand_num_dis)
+    while isodd(num_dis) 
+        num_dis = rand(rdd.rand_num_dis) 
+    end
+    
     if rdd.truncated
-        while num_dis == zero(typeof(num_dis)) || num_dis > system_size(rdd)
+        while num_dis == zero(typeof(num_dis)) || num_dis > system_size(rdd) || isodd(num_dis)
             num_dis = rand(rdd.rand_num_dis)
         end
     end

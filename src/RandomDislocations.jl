@@ -61,20 +61,47 @@ function origin_already_present( idx, origin, all_dislocations )
     return already_here
 end
 
+function unique_origin(idx, origin, all_dislocations)
+    # Be sure that the same origin is not used multiple times
+    while origin_already_present( idx, origin, all_dislocations )
+        origin = rand_dislocation( rbv )[ Int(DislocationOrigin) ]
+    end
+    return origin
+end
+
+function set_dislocation!(all_dislocations, idx, bob, origin, rbv::RandomDislocation)
+    origin = unique_origin(idx, origin, all_dislocations)
+    all_dislocations[Int(BurgersVector), idx]     = Vector2D( bob )
+    all_dislocations[Int(DislocationOrigin), idx] = Vector2D( origin )
+    return nothing
+end
+
+function generate_dislocation!(all_dislocations, idx, rbv::RandomDislocation)
+    (bob, origin) = rand_dislocation( rbv )
+    set_dislocation!(all_dislocations, idx, bob, origin, rbv)    
+    return nothing
+end
+
 """
     collect_dislocations( rbv::RandomDislocation, num_dislocations ) -> Array{Vector2D, 2, num_dislocations}
+
+Generate the set of dislocations. Only the first `num_dislocations ÷ 2` are *unique*. The last 
+`num_dislocations ÷ 2` always have opposite Burgers vectors to the first set such that the 
+total topological charge is zero.
 """
 function collect_dislocations( rbv::RandomDislocation, num_dislocations )
     all_dislocations = Array{Vector2D{Float64}, 2}(undef, 2, num_dislocations)
-    for idx ∈ eachindex(1:num_dislocations)
-        (bob, origin) = rand_dislocation( rbv )
-        # Be sure that the same origin is not used multiple times
-        while origin_already_present( idx, origin, all_dislocations )
-            origin = rand_dislocation( rbv )[ Int(DislocationOrigin) ]
-        end
-        all_dislocations[Int(BurgersVector), idx]     = Vector2D( bob )
-        all_dislocations[Int(DislocationOrigin), idx] = Vector2D( origin )
+    unique_dislocations = num_dislocations ÷ 2
+    for idx ∈ eachindex(1:unique_dislocations)
+        generate_dislocation!(all_dislocations, idx, rbv)
     end
+
+    for (old, new) ∈ zip( 1:unique_dislocations, (unique_dislocations + one(Int):num_dislocations) )
+        rand_dis = rand_dislocation(rbv)
+        set_dislocation!(all_dislocations, new, -1 * all_dislocations[Int(BurgersVector), old], 
+                         Vector2D( unique_origin(new, rand_dis[Int(DislocationOrigin), new], rbv) ), rbv )
+    end
+
     return all_dislocations
 end
 

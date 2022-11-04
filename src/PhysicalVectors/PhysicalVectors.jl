@@ -3,8 +3,10 @@ Module to house an interface of vectors commonly used in physics.
 """
 module PhysicalVectors
 
+import Base
+
 # Exports from PhysicalVector interface
-export PhysicalVector, equal, add!, multiply!, ⋅, subtract!, divide!, dot, magnitude, magnitude2, normalize, normalize!, unit, unit!
+export PhysicalVector, isequal, add!, multiply!, ⋅, subtract!, divide!, dot, magnitude, magnitude2, normalize, normalize!, unit, unit!
 
 """
 This is an interface for vectors used in physics.
@@ -14,7 +16,7 @@ This is an interface for vectors used in physics.
 The only functions that the user must define for a
 `VectorType <: PhysicalVector` are:
 
-* Equality:                       `equal(vector1, vector2)`
+* Equality:                       `Base.isequal(vector1, vector2)`
 * Addition:                       `Base.:+(vector1, vector2)`
 * In-place Addition:              `add!(vector1, vector2)`
 * In-place Subtraction:           `subract!(vector1, vector2)`
@@ -43,7 +45,7 @@ abstract type PhysicalVector end
 """
 # REQUIRED FOR `PhysicalVector` INTERFACE 
 
-    equal(A::PhysicalVector, B::PhysicalVector)
+    Base.isequal(A::PhysicalVector, B::PhysicalVector)
 
 Check for equality between two `PhysicalVector`s. 
     
@@ -51,7 +53,7 @@ Check for equality between two `PhysicalVector`s.
 * Note that Base.:(==) is not used for issues with mutability and equality versus egality.
 * This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
 """
-equal(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+Base.isequal(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 
 """
 # REQUIRED FOR `PhysicalVector` INTERFACE 

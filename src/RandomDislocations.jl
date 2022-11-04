@@ -1,7 +1,7 @@
 using Distributions
 using ..PhysicalVectors
 
-export RandomDislocation, UniformBurgersVector
+export RandomDislocation, UniformBurgersVector, BurgersVector, DislocationOrigin
 
 @enum DislocationProperties begin 
     BurgersVector = 1
@@ -48,7 +48,7 @@ rand_dislocation( rbv::RandomDislocation ) = ( rand_burger_vector(rbv), rand_dis
 """
     origin_already_present( idx, origin, all_dislocations )
 
-Determine if the `origin isa Vector2D` is already present within the `all_dislocations` array up until the `idx` element using `Vectors2d.equal`.
+Determine if the `origin isa Vector2D` is already present within the `all_dislocations` array up until the `idx` element using `Vectors2d.isequal`.
 """
 function origin_already_present( idx, origin, all_dislocations )
     if idx == 1
@@ -56,12 +56,13 @@ function origin_already_present( idx, origin, all_dislocations )
     end
     already_here = false
     for dis_idx ∈ 1:(idx-1)
-        already_here = equal( origin, all_dislocations[Int(DislocationOrigin), dis_idx] )
+        already_here = isequal( origin, all_dislocations[Int(DislocationOrigin), dis_idx] )
+        already_here ? break : continue
     end
     return already_here
 end
 
-function unique_origin(idx, origin, all_dislocations)
+function unique_origin(idx, origin, all_dislocations, rbv)
     # Be sure that the same origin is not used multiple times
     while origin_already_present( idx, origin, all_dislocations )
         origin = rand_dislocation( rbv )[ Int(DislocationOrigin) ]
@@ -70,7 +71,7 @@ function unique_origin(idx, origin, all_dislocations)
 end
 
 function set_dislocation!(all_dislocations, idx, bob, origin, rbv::RandomDislocation)
-    origin = unique_origin(idx, origin, all_dislocations)
+    origin = unique_origin(idx, origin, all_dislocations, rbv)
     all_dislocations[Int(BurgersVector), idx]     = Vector2D( bob )
     all_dislocations[Int(DislocationOrigin), idx] = Vector2D( origin )
     return nothing
@@ -97,9 +98,10 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations )
     end
 
     for (old, new) ∈ zip( 1:unique_dislocations, (unique_dislocations + one(Int):num_dislocations) )
-        rand_dis = rand_dislocation(rbv)
-        set_dislocation!(all_dislocations, new, -1 * all_dislocations[Int(BurgersVector), old], 
-                         Vector2D( unique_origin(new, rand_dis[Int(DislocationOrigin), new], rbv) ), rbv )
+        old_burger = all_dislocations[Int(BurgersVector), old]
+        new_burger = -1 * old_burger
+        new_origin = unique_origin( new, all_dislocations[Int(DislocationOrigin), old], all_dislocations, rbv )
+        set_dislocation!(all_dislocations, new, new_burger, Vector2D(new_origin), rbv )
     end
 
     return all_dislocations

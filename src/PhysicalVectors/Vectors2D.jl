@@ -1,7 +1,8 @@
 using StaticArrays
+import Base
 
 # Exports from Vector2D implementation
-export Vector2D, Vector2D!, equal, add!, multiply!
+export Vector2D, Vector2D!, isequal, add!, multiply!
 
 """
 Wrapper around StaticArrays.MVector{2,T} for simpler use in 
@@ -127,7 +128,7 @@ end
 #  Interface requirement definitions.
 #= ========================================================================================= =#
 """
-    equal(A::Vector2D, B::Vector2D)
+    Base.isequal(A::Vector2D, B::Vector2D)
 
 Vector2D _equality_ based on component-wise equality.
 
@@ -144,11 +145,11 @@ Vector2D{Float64}([1.0, 2.0])
 julia> B = Vector2D(1, 2.)
 Vector2D{Float64}([1.0, 2.0])
 
-julia> equal(A, B)
+julia> isequal(A, B)
 true
 ```
 """
-equal(A::Vector2D, B::Vector2D) = prod(A.vec .== B.vec)
+Base.isequal(A::Vector2D{S}, B::Vector2D{T}) where {S, T} = prod(A.vec .== B.vec)
 
 """
     +(A::Vector2D, B::Vector2D) -> Vector2D

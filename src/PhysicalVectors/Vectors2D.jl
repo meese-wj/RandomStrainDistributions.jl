@@ -96,6 +96,8 @@ function Vector2D(tup::Tuple{S, T}) where {S <: Real, T <: Real}
     return Vector2D{eltype(vals)}( MVector{2, eltype(vals)}(vals) )
 end
 
+Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )
+
 """
     Vector2D!(old_vec::Vector2D{P}, new_components::Tuple{S, T}) where {P <: Real, S <: Real, T <: Real}
 

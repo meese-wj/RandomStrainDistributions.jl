@@ -18,7 +18,7 @@ end
 
     let 
         @testset "Testing Random Dislocations" begin
-            burgers_vectors = [ Vector2D(1., 0), Vector2D(-1., 0), Vector2D(0, 1.), Vector2D(0, -1.) ]
+            burgers_vectors = tetragonal_burgers_vectors
             ςon = 1/50
             Lx = 100
             rsd = RandomDislocationDistribution(; expected_num_dislocations = round(Int, ςon * Lx^2), Lx = Lx, burgers_vectors = burgers_vectors )

@@ -39,7 +39,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 0.15915494309189535
 ```
 """
-function b2g_shear( bob::Vector2D, eval_r::Vector2D )
+function b2g_shear( eval_r::Vector2D, bob::Vector2D )
     return 1/(2*π) * ( ( eval_r.vec[1]^2 - eval_r.vec[2]^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 

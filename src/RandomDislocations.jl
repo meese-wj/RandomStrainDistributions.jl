@@ -1,7 +1,7 @@
 using Distributions
 using ..PhysicalVectors
 
-export RandomDislocation, UniformBurgersVector, BurgersVector, DislocationOrigin
+export RandomDislocation, UniformBurgersVector, BurgersVector, DislocationOrigin, tetragonal_burgers_vectors
 
 @enum DislocationProperties begin 
     BurgersVector = 1
@@ -106,6 +106,8 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations )
 
     return all_dislocations
 end
+
+const tetragonal_burgers_vectors = [ Vector2D(1., 0), Vector2D(-1., 0), Vector2D(0, 1.), Vector2D(0, -1.) ]
 
 """
 Struct containing uniform distribution for the Burger's vectors and their locations 

@@ -17,7 +17,7 @@ julia> subtract_PBC( 1., 8.; axis_size = 10 )
 3.0
 ```
 """
-function subtract_PBC( x1::Real, x0::Real; axis_size )
+function subtract_PBC( x1::Real, x0::Real, axis_size )
     value = x1 - x0 
     while value > axis_size/2
         value -= axis_size
@@ -47,7 +47,7 @@ julia> A
 Vector2D{Float64}([4.0, 3.0])
 ```
 """
-function subtract_PBC!( A::Vector2D, B::Vector2D; Lx, Ly = Lx )
-    broadcast!( (a, b, ax) -> subtract_PBC(a, b; axis_size=ax), A.vec, A.vec, B.vec, (Lx, Ly) )
+function subtract_PBC!( A::Vector2D, B::Vector2D, Lx, Ly = Lx )
+    broadcast!( (a, b, ax) -> subtract_PBC(a, b, ax), A.vec, A.vec, B.vec, (Lx, Ly) )
     return nothing
 end

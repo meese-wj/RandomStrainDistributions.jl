@@ -84,7 +84,7 @@ Convenient keyword constructor for the `RandomDislocationDistribution` struct wh
 * This does not use `StatsBase.Truncated` because it's about an order of magnitude slower than my version in `collect_dislocations`.
 """
 function RandomDislocationDistribution(; expected_num_dislocations::Int, Lx, Ly = Lx, vector_diff = subtract_PBC!, burgers_vectors = tetragonal_burgers_vectors, truncated = true )
-    diff = (A, B) -> vector_diff( A, B; Lx = Lx, Ly = Ly )
+    diff = (A, B) -> vector_diff( A, B, Lx, Ly )
     if vector_diff != subtract_PBC!
         diff = vector_diff
     end 

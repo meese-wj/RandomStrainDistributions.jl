@@ -5,7 +5,7 @@ using ..PhysicalVectors
 
 export b1g_shear, b2g_shear, bxg_shears!
 
-"""
+@doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
 
 Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bob` at site `eval_r`. 
@@ -13,6 +13,11 @@ Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bo
 # Additional Information
 * The edge dislocation is aligned along the ``z`` axis at the origin.
 * This is in units of ``1/(1-σ)`` for a Poisson ratio ``σ``.
+* This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
+
+```math
+ε_{B_{1g}}^{(2 - {\rm Fe})} = \frac{1}{2} \left(  \partial_x u_x + \partial_y u_y  \right) = \frac{1}{2} \left( ε_{xx}^{(1-{\rm Fe})} + ε_{yy}^{(1-{\rm Fe})} \right).
+```
 
 # Examples
 ```jldocstest
@@ -21,7 +26,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 function b1g_shear( eval_r::Vector2D, bob::Vector2D )
-    return -1/π * ( eval_r.vec[1] * eval_r.vec[2] / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return 1/(2*π) * ( ( eval_r.vec[1]^2 - eval_r.vec[2]^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 
 """
@@ -32,6 +37,11 @@ Calculate the ``B_{2g}`` from an edge dislocation for a given Burgers vector `bo
 # Additional Information
 * The edge dislocation is aligned along the ``z`` axis at the origin.
 * This is in units of ``1/(1-σ)`` for a Poisson ratio ``σ``.
+* This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
+
+```math
+ε_{B_{2g}}^{(2 - {\rm Fe})} = \frac{1}{2} \left(  \partial_x u_x - \partial_y u_y  \right) = \frac{1}{2} \left( ε_{xx}^{(1-{\rm Fe})} - ε_{yy}^{(1-{\rm Fe})} \right).
+```
 
 # Examples
 ```jldocstest
@@ -40,7 +50,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 function b2g_shear( eval_r::Vector2D, bob::Vector2D )
-    return 1/(2*π) * ( ( eval_r.vec[1]^2 - eval_r.vec[2]^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return -1/(2π) * ( eval_r.vec[1] * eval_r.vec[2] / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 
 """

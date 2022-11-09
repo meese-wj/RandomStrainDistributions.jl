@@ -29,7 +29,7 @@ function b1g_shear( eval_r::Vector2D, bob::Vector2D )
     return 1/(4π) * ( ( eval_r.vec[1]^2 - eval_r.vec[2]^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 
-"""
+@doc raw"""
     b2g_shear( eval_r::Vector2D, bob::Vector2D )
 
 Calculate the ``B_{2g}`` from an edge dislocation for a given Burgers vector `bob` at site `eval_r`. 

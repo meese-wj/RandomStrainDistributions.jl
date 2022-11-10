@@ -3,7 +3,7 @@ module ShearFunctions
 using StaticArrays
 using ..PhysicalVectors
 
-export b1g_shear, b2g_shear, bxg_shears!
+export b1g_shear, b2g_shear, bxg_shears!, Δsplitting
 
 @doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
@@ -86,5 +86,12 @@ function bxg_shears!( eval_r::Vector2D, bob::Vector2D; diff::Function = subtract
     b2g = b2g_shear(eval_r, bob)
     return (b1g, b2g)
 end
+
+"""
+    Δsplitting(ε₁, ε₂)
+
+Calculate the level-splitting Δ as the quadrature sum of the strains.
+"""
+Δsplitting(ε₁, ε₂) = sqrt(ε₁^2 + ε₂^2)
     
 end # module ShearFunctions

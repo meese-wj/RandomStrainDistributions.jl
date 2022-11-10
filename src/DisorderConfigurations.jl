@@ -27,6 +27,7 @@ Interface function that creates new field to store the result of `generate_disor
 generate_disorder( dis_config::DisorderConfiguration ) = error("No implementation has been defined for $(typeof(dis_config)).")
 
 mutable struct ShearFromDislocations{T <: Number} <: DisorderConfiguration
+    include_Δ::Bool
     vector_diff::Function
     axes::Tuple{Int, Int}
     dislocations::Array{Vector2D{T}, 2}
@@ -38,10 +39,11 @@ end
 
 Convenient keyword constructor for the `ShearFromDislocations` type. 
 """
-function ShearFromDislocations{T}(; Lx, Ly = Lx, diff ) where T
+function ShearFromDislocations{T}(; Lx, Ly = Lx, diff, include_Δ = false ) where T
     axes = (Lx, Ly)
     dislocations = Array{Vector2D{T}, 2}(undef, (0, 0))
-    return ShearFromDislocations( diff, axes, dislocations, zeros(T, (axes..., 2)) )
+    num_columns = include_Δ ? 3 : 2
+    return ShearFromDislocations( include_Δ, diff, axes, dislocations, zeros(T, (axes..., num_columns)) )
 end
 
 ShearFromDislocations(; kwargs...) = ShearFromDislocations{Float64}(; kwargs...)
@@ -50,6 +52,7 @@ set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( 
 
 function compute_strains!( sfd::ShearFromDislocations )
     temp_eval_r = Vector2D(0., 0.)
+    include_Δ = sfd.include_Δ
     for (xdx, ydx) ∈ collect( Iterators.product( 1:sfd.axes[1], 1:sfd.axes[2] ) )
         for dis_idx ∈ 1:size(sfd.dislocations)[2]
             Vector2D!( temp_eval_r, (xdx, ydx) )
@@ -57,6 +60,10 @@ function compute_strains!( sfd::ShearFromDislocations )
                                       source_r = sfd.dislocations[Int(DislocationOrigin), dis_idx], diff = sfd.vector_diff )
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
+        end
+
+        if include_Δ
+            sfd.strain_fields[xdx, ydx, 3] = Δsplitting( sfd.strain_fields[xdx, ydx, 1], sfd.strain_fields[xdx, ydx, 2] )
         end
     end
     return nothing

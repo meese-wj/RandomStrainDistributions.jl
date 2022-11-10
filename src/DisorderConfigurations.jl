@@ -34,19 +34,20 @@ mutable struct ShearFromDislocations{T <: Number} <: DisorderConfiguration
     strain_fields::Array{T, 3}
 end
 
+_field_columns(b::Bool) = b ? 3 : 2
+
 """
     ShearFromDislocations(; Lx, Ly = Lx)
 
 Convenient keyword constructor for the `ShearFromDislocations` type. 
 """
-function ShearFromDislocations{T}(; Lx, Ly = Lx, diff, include_Δ = false ) where T
+function ShearFromDislocations{T}( Lx, Ly, diff, include_Δ::Bool = false ) where T
     axes = (Lx, Ly)
     dislocations = Array{Vector2D{T}, 2}(undef, (0, 0))
-    num_columns = include_Δ ? 3 : 2
-    return ShearFromDislocations( include_Δ, diff, axes, dislocations, zeros(T, (axes..., num_columns)) )
+    return ShearFromDislocations( include_Δ, diff, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
 end
 
-ShearFromDislocations(; kwargs...) = ShearFromDislocations{Float64}(; kwargs...)
+ShearFromDislocations(args...) = ShearFromDislocations{Float64}(args...)
 
 set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( sfd.dislocations = dislocation_property_array )
 
@@ -75,13 +76,13 @@ function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
     return nothing 
 end
 
-function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly) )
-    sfd = ShearFromDislocations(; Lx, Ly, diff)
+function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly) )
+    sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
     set_dislocations!(sfd, dislocations)
     generate_disorder!(disorder_field, sfd)
 end
 
-make_fields(sfd::ShearFromDislocations{T}) where T = zeros(T, (sfd.axes..., 2))
+make_fields(sfd::ShearFromDislocations{T}) where T = zeros(T, (sfd.axes..., _field_columns(sfd.include_Δ)) )
 
 function generate_disorder( sfd::ShearFromDislocations )
     disorder_fields = make_fields(sfd)
@@ -89,8 +90,8 @@ function generate_disorder( sfd::ShearFromDislocations )
     return disorder_fields
 end
 
-function generate_disorder(Lx::Int, Ly::Int, dislocations, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly))
-    sfd = ShearFromDislocations(; Lx, Ly, diff)
+function generate_disorder(Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly))
+    sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
     set_dislocations!(sfd, dislocations)
     disorder_fields = make_fields(sfd)
     generate_disorder!(disorder_fields, sfd)

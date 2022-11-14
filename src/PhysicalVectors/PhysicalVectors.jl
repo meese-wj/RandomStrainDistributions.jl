@@ -6,7 +6,7 @@ module PhysicalVectors
 import Base
 
 # Exports from PhysicalVector interface
-export PhysicalVector, isequal, add!, multiply!, ⋅, subtract!, divide!, dot, magnitude, magnitude2, normalize, normalize!, unit, unit!
+export PhysicalVector, isequal, ⋅, dot, magnitude, magnitude2, normalize, unit
 
 """
 This is an interface for vectors used in physics.

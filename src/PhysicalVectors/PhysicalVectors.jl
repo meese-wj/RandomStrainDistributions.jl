@@ -18,10 +18,7 @@ The only functions that the user must define for a
 
 * Equality:                       `Base.isequal(vector1, vector2)`
 * Addition:                       `Base.:+(vector1, vector2)`
-* In-place Addition:              `add!(vector1, vector2)`
-* In-place Subtraction:           `subract!(vector1, vector2)`
 * Scalar Multiplication:          `Base.:*(scalar, vector)`
-* In-place Scalar Multiplication: `multiply!(vector, scalar)`
 * Scalar Product:                 `⋅(vector1, vector2) #\\cdot [tab]`
 
 The other exported functions are standard vector 
@@ -31,14 +28,11 @@ above:
 * Scalar Multiplication:          `Base.:*(vector, scalar)`
 * Subtraction:                    `Base.:-(vector1, vector2)`
 * Divison by Scalar:              `Base.:/(vector, scalar)`
-* In-place Divison by Scalar:     `divide!(vector, scalar)`
 * Scalar Product:                 `dot(vector1, vector2)`
 * Square Magnitude:               `magnitude2(vector)`
 * Magnitude:                      `magnitude(vector)`
 * Normalization:                  `normalize(vector)`
-* In-place Normalization:         `normalize!(vector)`
 * Unit:                           `unit(vector)`
-* In-place Unit:                  `unit!(vector)`
 """
 abstract type PhysicalVector end
 
@@ -71,19 +65,6 @@ Base.:+(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined
 """
 # REQUIRED FOR `PhysicalVector` INTERFACE 
 
-    add!(A::PhysicalVector, B::PhysicalVector)
-
-In-place addition of two `PhysicalVector`s. 
-    
-# Additional Information 
-* It is implied that the first argument, `A`, is modified in-place.
-* This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
-"""
-add!(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
-
-"""
-# REQUIRED FOR `PhysicalVector` INTERFACE 
-
     *(λ, A::PhysicalVector)
 
 Multiplication of a `PhysicalVector` by the scalar `λ`. 
@@ -93,19 +74,6 @@ Multiplication of a `PhysicalVector` by the scalar `λ`.
 * This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
 """
 Base.:*(λ, A::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
-
-"""
-# REQUIRED FOR `PhysicalVector` INTERFACE 
-
-    multiply!(A::PhysicalVector, λ)
-
-In-place multiplication of a `PhysicalVector` by the scalar `λ`. 
-    
-# Additional Information 
-* It is implied that the first argument, `A`, is modified in-place.
-* This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
-"""
-multiply!(A::PhysicalVector, λ) = error("No implementation defined for vectors of type $(typeof(λ)) and $(typeof(A)).")
 
 """
 # REQUIRED FOR `PhysicalVector` INTERFACE 
@@ -154,16 +122,6 @@ Division of a `PhysicalVector` by the scalar `λ`.
 Base.:/(A::PhysicalVector, λ) = A * (1 / λ)
 
 """
-    divide!(A::PhysicalVector, λ)
-
-Division of a `PhysicalVector` by the scalar `λ`. 
-    
-# Additional Information 
-* It is implied that the first argument, `A`, is modified in-place.
-"""
-divide!(A::PhysicalVector, λ) = multiply!(A, 1 / λ)
-
-"""
     dot(A::PhysicalVector, B::PhysicalVector)
 
 Scalar product of two `PhysicalVector`s. 
@@ -204,16 +162,6 @@ Divide a `PhysicalVector` by its length.
 normalize(A::PhysicalVector) = A / magnitude(A) 
 
 """
-    normalize!(A::PhysicalVector)
-
-Divide a `PhysicalVector` by its length. 
-    
-# Additional Information 
-* It is implied that the argument, `A`, is modified in-place.
-"""
-normalize!(A::PhysicalVector) = divide!(A, magnitude(A)) 
-
-"""
     unit(A::PhysicalVector)
 
 Divide a `PhysicalVector` by its length.
@@ -223,17 +171,6 @@ Divide a `PhysicalVector` by its length.
 * A call to a copy constructor is implied. 
 """
 unit(A::PhysicalVector) = normalize(A) 
-
-"""
-    unit!(A::PhysicalVector)
-
-Divide a `PhysicalVector` by its length. 
-    
-# Additional Information 
-* This is an alias for `normalize!(A::PhysicalVector)`.
-* It is implied that the argument, `A`, is modified in-place.
-"""
-unit!(A::PhysicalVector) = normalize!(A) 
 
 #= ========================================================================================= =#
 #  Include implementations of the PhysicalVector interface.

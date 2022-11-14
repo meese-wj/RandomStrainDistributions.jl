@@ -1,19 +1,16 @@
+using StaticArrays
 import Base
 
 # Exports from Vector2D implementation
-export Vector2D
+export Vector2D, Vector2D!, isequal, add!, multiply!
 
 """
-    struct Vector2D{T <: Real} <: PhysicalVector
-
-Wrapper around `NTuple{2, T}` for convenience in physics applications.
+Wrapper around StaticArrays.MVector{2,T} for simpler use in 
+physics applications.
 """
-struct Vector2D{T <: Real} <: PhysicalVector
-    vec::NTuple{2, T}
+mutable struct Vector2D{T <: Real} <: PhysicalVector
+    vec::MVector{2,T}
 end
-
-Base.show(io::IO, vec::Vector2D{T}) where T = "Vector2D{$T}($(vec.vec[1]), $(vec.vec[2]))"
-Base.show(vec::Vector2D) = Base.show(stdout, vec)
 
 #= ========================================================================================= =#
 #  Struct constructors
@@ -27,10 +24,10 @@ Copy constructor from an `AbstractVector`
 
 ```jldoctest
 julia> Vector2D([1., 2])
-Vector2D{Float64}(1.0, 2.0)
+Vector2D{Float64}([1.0, 2.0])
 ```
 """
-Vector2D(arr::AbstractArray{T,1}) where {T <: Real} = Vector2D{T}( (arr[1], arr[2]) )
+Vector2D(arr::AbstractArray{T,1}) where {T <: Real} = Vector2D{T}( MVector{2,T}(arr[1], arr[2]) )
 
 """
     Vector2D(vec::Vector2D)
@@ -41,10 +38,24 @@ Copy constructor from an `Vector2D`
 
 ```jldoctest
 julia> Vector2D( Vector2D([1., 2]) )
-Vector2D{Float64}(1.0, 2.0)
+Vector2D{Float64}([1.0, 2.0])
 ```
 """
 Vector2D(vec::Vector2D{T}) where {T <: Real} = Vector2D( vec.vec )
+
+"""
+    Vector2D(x::T, y::T) where {T <: Real}
+
+Copy constructor from a pair x and y _explicitly_ of the same type `T <: Real` 
+
+# Examples
+
+```jldoctest
+julia> Vector2D(1., 2.)
+Vector2D{Float64}([1.0, 2.0])
+```
+"""
+Vector2D(x::T, y::T) where {T <: Real} = Vector2D{T}( MVector{2,T}(x,y) )
 
 """
     Vector2D(x::Real, y::Real)
@@ -58,7 +69,7 @@ This function makes a call to `Vector2D(::Tuple{S, T})` where `{S <: Real, T <: 
 
 ```jldoctest
 julia> Vector2D(1, 2.)
-Vector2D{Float64}(1.0, 2.0)
+Vector2D{Float64}([1.0, 2.0])
 ```
 """
 Vector2D(x::Real, y::Real) = Vector2D((x, y))
@@ -77,15 +88,43 @@ in the output.
 
 ```jldoctest
 julia> Vector2D((1, 2.))
-Vector2D{Float64}(1.0, 2.0)
+Vector2D{Float64}([1.0, 2.0])
 ```
 """
 function Vector2D(tup::Tuple{S, T}) where {S <: Real, T <: Real}
     vals = promote(tup...)
-    return Vector2D{eltype(vals)}( vals )
+    return Vector2D{eltype(vals)}( MVector{2, eltype(vals)}(vals) )
 end
 
-Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )   
+Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )
+
+"""
+    Vector2D!(old_vec::Vector2D{P}, new_components::Tuple{S, T}) where {P <: Real, S <: Real, T <: Real}
+
+In-place copy from a tuple of reals `new_components === (x::Real, y::Real)`. 
+
+# Additional Information
+In the case that the elements are of different types, they are first
+passed through `promote(x, y)` and the common-type values are stored
+in the output.
+
+# Examples
+
+```jldoctest
+julia> A = Vector2D((1, 2.))
+Vector2D{Float64}([1.0, 2.0])
+
+julia> Vector2D!(A, (2, 4))
+
+julia> A
+Vector2D{Float64}([2.0, 4.0])
+```
+"""
+function Vector2D!( old_vec::Vector2D{P}, new_components::Tuple{S, T} ) where {P <: Real, S <: Real, T <: Real}
+    vals = convert( Tuple{eltype(old_vec.vec), eltype(old_vec.vec)}, new_components)
+    broadcast!( (x, y) -> y, old_vec.vec, old_vec.vec, vals )
+    return nothing
+end    
 
 #= ========================================================================================= =#
 #  Interface requirement definitions.

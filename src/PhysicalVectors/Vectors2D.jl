@@ -12,7 +12,7 @@ struct Vector2D{T <: Real} <: PhysicalVector
     vec::NTuple{2, T}
 end
 
-Base.show(io::IO, vec::Vector2D{T}) where T = "Vector2D{$T}($(vec.vec[1]), $(vec.vec[2]))"
+Base.show(io::IO, vec::Vector2D{T}) where T = Base.print(io, "Vector2D{$T}($(vec.vec[1]), $(vec.vec[2]))")
 Base.show(vec::Vector2D) = Base.show(stdout, vec)
 
 #= ========================================================================================= =#
@@ -96,17 +96,16 @@ Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )
 Vector2D _equality_ based on component-wise equality.
 
 # Additional Information
-Use this function for equality instead of `==` which defaults to object _egality_ since
-`Vector2D` is mutable.
+Use this function for equality instead of `==`.
 
 # Examples
 
 ```jldoctest
 julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
+Vector2D{Float64}(1.0, 2.0)
 
 julia> B = Vector2D(1, 2.)
-Vector2D{Float64}([1.0, 2.0])
+Vector2D{Float64}(1.0, 2.0)
 
 julia> isequal(A, B)
 true
@@ -121,13 +120,13 @@ Addition for `Vector2D`. Includes a copy constructor.
 
 ```jldoctest
 julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
+Vector2D{Float64}(1.0, 2.0)
 
 julia> B = Vector2D(1, 2.)
-Vector2D{Float64}([1.0, 2.0])
+Vector2D{Float64}(1.0, 2.0)
 
 julia> A + B
-Vector2D{Float64}([2.0, 4.0])
+Vector2D{Float64}(2.0, 4.0)
 ```
 """
 Base.:+(A::Vector2D, B::Vector2D) = Vector2D( broadcast(+, A.vec, B.vec) )
@@ -139,13 +138,13 @@ Multiplication by a scalar `λ` for `Vector2D`. Includes a copy constructor.
 
 ```jldoctest
 julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
+Vector2D{Float64}(1.0, 2.0)
 
 julia> λ = 2.
 2.0
 
 julia> λ * A
-Vector2D{Float64}([2.0, 4.0])
+Vector2D{Float64}(2.0, 4.0)
 ```
 """
 Base.:*(λ, A::Vector2D) = Vector2D( broadcast(*, A.vec, λ) )
@@ -172,84 +171,6 @@ function ⋅(A::Vector2D, B::Vector2D)
         ans += A.vec[idx] * B.vec[idx]
     end
     return ans
-end
-
-"""
-    add!(A::Vector2D, B::Vector2D) -> nothing
-
-In-place addition for `Vector2D`. The first argument, `A`, is modified.
-
-```jldoctest
-julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
-
-julia> B = Vector2D(1, 2.)
-Vector2D{Float64}([1.0, 2.0])
-
-julia> add!(A, B)
-
-julia> A 
-Vector2D{Float64}([2.0, 4.0])
-
-julia> B 
-Vector2D{Float64}([1.0, 2.0])
-```
-"""
-function add!(A::Vector2D, B::Vector2D)
-    broadcast!(+, A.vec, A.vec, B.vec)
-    return nothing
-end
-
-"""
-    subtract!(A::Vector2D, B::Vector2D) -> nothing
-
-In-place subtraction for `Vector2D`. The first argument, `A`, is modified.
-
-```jldoctest
-julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
-
-julia> B = Vector2D(1, 2.)
-Vector2D{Float64}([1.0, 2.0])
-
-julia> subtract!(A, B)
-
-julia> A 
-Vector2D{Float64}([0.0, 0.0])
-
-julia> B 
-Vector2D{Float64}([1.0, 2.0])
-```
-"""
-function subtract!(A::Vector2D, B::Vector2D)
-    broadcast!(-, A.vec, A.vec, B.vec)
-    return nothing
-end
-
-"""
-    multiply!(A::Vector2D, λ) -> nothing
-
-In-place multiplication by a scalar for `Vector2D`. The first argument, `A`, is modified.
-
-```jldoctest
-julia> A = Vector2D(1., 2)
-Vector2D{Float64}([1.0, 2.0])
-
-julia> λ = 2.
-2.0
-
-julia> multiply!(A, λ)
-
-julia> A 
-Vector2D{Float64}([2.0, 4.0])
-
-julia> λ
-2.0
-```
-"""
-function multiply!(A::Vector2D, λ)
-    broadcast!(*, A.vec, A.vec, λ)
-    return nothing
 end
 
 #= ========================================================================================= =#

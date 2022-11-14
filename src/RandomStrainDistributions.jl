@@ -4,6 +4,9 @@ using Reexport
 include("PhysicalVectors/PhysicalVectors.jl")
 @reexport using .PhysicalVectors
 
+include("PBCImageFields.jl")
+@reexport using .PBCImageFields
+
 include("ShearFunctions.jl")
 @reexport using .ShearFunctions
 

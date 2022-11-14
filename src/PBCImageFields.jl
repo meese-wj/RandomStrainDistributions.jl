@@ -43,7 +43,7 @@ function PBCField(ϕfunc::Function, position::Vector2D{T}, origins, Lx, Ly, tole
     old_output = output
     square_index = zero(Int)
     not_complete = true
-    while ( not_complete || square_index == zero(Int) )
+    while not_complete
         square_index += one(square_index)
         square_total = zero(output)
 

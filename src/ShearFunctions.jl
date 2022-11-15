@@ -3,7 +3,7 @@ module ShearFunctions
 using StaticArrays
 using ..PhysicalVectors
 
-export b1g_shear, b2g_shear, bxg_shears!, Δsplitting
+export b1g_shear, b2g_shear, bxg_shears, Δsplitting
 
 @doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
@@ -54,13 +54,12 @@ function b2g_shear( eval_r::Vector2D, bob::Vector2D )
 end
 
 """
-    bxg_shears!(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
+    bxg_shears(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
 
 Calculate the two shears `(b1g, b2g)` from the ``B_{1g}`` and ``B_{2g}`` channels from and edge dislocation situated at the `source_r`
 location and aligned along the ``z`` axis with a Burger's vector `bob`. 
 
 # Additional Information
-* This function mutates both and `eval_r`. It should be used in cases where `eval_r` is a temporary vector.
 * The keyword argument `diff <: Function` should be used in cases where `Vector2D` subtraction has a different definition than the normal one expected, for example with periodic boundary conditions.
 
 # Examples
@@ -80,10 +79,10 @@ julia> A
   0.15915494309189535
 ```
 """
-function bxg_shears!( eval_r::Vector2D, bob::Vector2D; diff::Function = subtract!, source_r::Vector2D = Vector2D(0.,0.) )
-    diff(eval_r, source_r)
-    b1g = b1g_shear(eval_r, bob)
-    b2g = b2g_shear(eval_r, bob)
+function bxg_shears( eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:(-), source_r::Vector2D = Vector2D(0.,0.) )
+    disp = diff(eval_r, source_r)
+    b1g = b1g_shear(disp, bob)
+    b2g = b2g_shear(disp, bob)
     return (b1g, b2g)
 end
 

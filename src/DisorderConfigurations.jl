@@ -52,13 +52,12 @@ ShearFromDislocations(args...) = ShearFromDislocations{Float64}(args...)
 set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( sfd.dislocations = dislocation_property_array )
 
 function compute_strains!( sfd::ShearFromDislocations )
-    temp_eval_r = Vector2D(0., 0.)
     include_Δ = sfd.include_Δ
     for (xdx, ydx) ∈ collect( Iterators.product( 1:sfd.axes[1], 1:sfd.axes[2] ) )
         for dis_idx ∈ 1:size(sfd.dislocations)[2]
-            Vector2D!( temp_eval_r, (xdx, ydx) )
-            (b1g, b2g) = bxg_shears!( temp_eval_r, sfd.dislocations[Int(BurgersVector), dis_idx]; 
-                                      source_r = sfd.dislocations[Int(DislocationOrigin), dis_idx], diff = sfd.vector_diff )
+            temp_r = Vector2D( Float64.( (xdx, ydx) ) )
+            (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[Int(BurgersVector), dis_idx]; 
+                                     source_r = sfd.dislocations[Int(DislocationOrigin), dis_idx], diff = sfd.vector_diff )
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
         end
@@ -76,7 +75,7 @@ function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
     return nothing 
 end
 
-function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly) )
+function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC(x, y, Lx, Ly) )
     sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
     set_dislocations!(sfd, dislocations)
     generate_disorder!(disorder_field, sfd)
@@ -90,7 +89,7 @@ function generate_disorder( sfd::ShearFromDislocations )
     return disorder_fields
 end
 
-function generate_disorder(Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC!(x, y, Lx, Ly))
+function generate_disorder(Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC(x, y, Lx, Ly))
     sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
     set_dislocations!(sfd, dislocations)
     disorder_fields = make_fields(sfd)

@@ -165,13 +165,7 @@ julia> A ⋅ B
 5.0
 ```
 """
-function ⋅(A::Vector2D, B::Vector2D)
-    ans = zero(eltype(A.vec))
-    for idx in eachindex(A.vec, B.vec)
-        ans += A.vec[idx] * B.vec[idx]
-    end
-    return ans
-end
+⋅(A::Vector2D, B::Vector2D) = A.vec[1] * B.vec[1] + A.vec[2] * B.vec[2]
 
 #= ========================================================================================= =#
 #  Includes for the Vector2D struct.

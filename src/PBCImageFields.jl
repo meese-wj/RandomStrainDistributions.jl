@@ -49,25 +49,25 @@ function PBCField(ϕfunc::Function, position::Vector2D{T}, origins, Lx, Ly, tole
 
         # Start in top left and move down at constant x 
         left_xdx = -square_index
-        for ydx ∈ UnitRange(square_index, -square_index)
+        @inbounds for ydx ∈ UnitRange(square_index, -square_index)
             square_total += image_contribution( ϕfunc, position, image_origin.(origins, left_xdx, ydx, Lx, Ly) )
         end
 
         # Now move along the bottom edge at constant y
         bottom_ydx = -square_index
-        for xdx ∈ UnitRange(-square_index, square_index)
+        @inbounds for xdx ∈ UnitRange(-square_index, square_index)
             square_total += image_contribution( ϕfunc, position, image_origin.(origins, xdx, bottom_ydx, Lx, Ly) )
         end
         
         # Next move along the right edge at constant x
         right_xdx = square_index
-        for ydx ∈ UnitRange(-square_index, square_index)
+        @inbounds for ydx ∈ UnitRange(-square_index, square_index)
             square_total += image_contribution(ϕfunc, position, image_origin.(origins, right_xdx, ydx, Lx, Ly))
         end
         
         # Finally move along the top edge at constant y
         top_ydx = square_index
-        for xdx ∈ UnitRange(square_index, -square_index)
+        @inbounds for xdx ∈ UnitRange(square_index, -square_index)
             square_total += image_contribution(ϕfunc, position, image_origin.(origins, xdx, top_ydx, Lx, Ly))
         end
 

@@ -8,7 +8,7 @@ module PBCImageFields
 
 using ..PhysicalVectors
 
-export PBCField, image_origin
+export PBCField, image_origin, _left_edge
 
 """
     image_origin(origin, nx, ny, Lx, Ly)
@@ -22,7 +22,7 @@ image_contribution( ϕfunc::Function, position::Vector2D{T}, _image_origin ) whe
 function _left_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
     left_xdx::Int = -square_index
-    @inbounds for ydx ∈ UnitRange(square_index, -square_index)
+    for ydx ∈ Iterators.reverse( UnitRange(-square_index, square_index) )
         edge_total += image_contribution( ϕfunc, position, image_origin.(origins, left_xdx, ydx, Lx, Ly) )
     end
     return edge_total
@@ -30,7 +30,7 @@ end
 
 function _bottom_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
-    bottom_ydx = -square_index
+    bottom_ydx::Int = -square_index
     @inbounds for xdx ∈ UnitRange(-square_index, square_index)
         edge_total += image_contribution( ϕfunc, position, image_origin.(origins, xdx, bottom_ydx, Lx, Ly) )
     end
@@ -39,7 +39,7 @@ end
 
 function _right_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
-    right_xdx = square_index
+    right_xdx::Int = square_index
     @inbounds for ydx ∈ UnitRange(-square_index, square_index)
         edge_total += image_contribution(ϕfunc, position, image_origin.(origins, right_xdx, ydx, Lx, Ly))
     end
@@ -48,7 +48,7 @@ end
 
 function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
-    top_ydx = square_index
+    top_ydx::Int = square_index
     @inbounds for xdx ∈ UnitRange(square_index, -square_index)
         edge_total += image_contribution(ϕfunc, position, image_origin.(origins, xdx, top_ydx, Lx, Ly))
     end

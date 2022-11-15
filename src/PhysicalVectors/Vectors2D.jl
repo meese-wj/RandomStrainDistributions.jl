@@ -1,7 +1,7 @@
 import Base
 
 # Exports from Vector2D implementation
-export Vector2D
+export Vector2D, xcomponent, ycomponent
 
 """
     struct Vector2D{T <: Real} <: PhysicalVector
@@ -87,6 +87,9 @@ end
 
 Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )   
 
+@inline xcomponent(A::Vector2D) = @inbounds A.vec[1]
+@inline ycomponent(A::Vector2D) = @inbounds A.vec[2]
+
 #= ========================================================================================= =#
 #  Interface requirement definitions.
 #= ========================================================================================= =#
@@ -165,7 +168,7 @@ julia> A ⋅ B
 5.0
 ```
 """
-⋅(A::Vector2D, B::Vector2D) = A.vec[1] * B.vec[1] + A.vec[2] * B.vec[2]
+⋅(A::Vector2D, B::Vector2D) = xcomponent(A) * xcomponent(B) + ycomponent(A) * ycomponent(B)
 
 #= ========================================================================================= =#
 #  Includes for the Vector2D struct.

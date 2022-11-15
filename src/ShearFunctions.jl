@@ -26,7 +26,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 function b1g_shear( eval_r::Vector2D, bob::Vector2D )
-    return 1/(4π) * ( ( eval_r.vec[1]^2 - eval_r.vec[2]^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return 1/(4π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 
 @doc raw"""
@@ -50,7 +50,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 function b2g_shear( eval_r::Vector2D, bob::Vector2D )
-    return -1/(2π) * ( eval_r.vec[1] * eval_r.vec[2] / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return -1/(2π) * ( xcomponent(eval_r) * ycomponent(eval_r) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 
 """

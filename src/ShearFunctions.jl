@@ -2,11 +2,13 @@ module ShearFunctions
 
 using StaticArrays
 using ..PhysicalVectors
+using ..CrystalDefects
 
 export b1g_shear, b2g_shear, bxg_shears, Δsplitting
 
 @doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
+    b1g_shear( position::Vector2D, dis::Dislocation )
 
 Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bob` at site `eval_r`. 
 
@@ -28,9 +30,11 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 function b1g_shear( eval_r::Vector2D, bob::Vector2D )
     return 1/(4π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
+b1g_shear(position, dis::Dislocation) = b1g_shear( position - dislocation_origin(dis), burgers_vector(dis) )
 
 @doc raw"""
     b2g_shear( eval_r::Vector2D, bob::Vector2D )
+    b2g_shear( position::Vector2D, dis::Dislocation )
 
 Calculate the ``B_{2g}`` from an edge dislocation for a given Burgers vector `bob` at site `eval_r`. 
 
@@ -52,9 +56,11 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 function b2g_shear( eval_r::Vector2D, bob::Vector2D )
     return -1/(2π) * ( xcomponent(eval_r) * ycomponent(eval_r) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
+b2g_shear(position, dis::Dislocation) = b2g_shear( position - dislocation_origin(dis), burgers_vector(dis) )
 
 """
     bxg_shears(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
+    bxg_shears(position::Vector2D, dis::Dislocation; diff::Function) -> Tuple{T, T} where {T <: Real}
 
 Calculate the two shears `(b1g, b2g)` from the ``B_{1g}`` and ``B_{2g}`` channels from and edge dislocation situated at the `source_r`
 location and aligned along the ``z`` axis with a Burger's vector `bob`. 
@@ -85,6 +91,7 @@ function bxg_shears( eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:(-)
     b2g = b2g_shear(disp, bob)
     return (b1g, b2g)
 end
+bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position, burgers_vector(dis); diff = diff, source_r = dislocation_origin(dis) )
 
 """
     Δsplitting(ε₁, ε₂)

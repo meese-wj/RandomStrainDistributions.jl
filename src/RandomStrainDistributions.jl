@@ -4,6 +4,9 @@ using Reexport
 include("PhysicalVectors/PhysicalVectors.jl")
 @reexport using .PhysicalVectors
 
+include("CrystalDefects.jl")
+@reexport using .CrystalDefects
+
 include("PBCImageFields.jl")
 @reexport using .PBCImageFields
 

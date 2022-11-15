@@ -36,7 +36,7 @@ size Lx, Ly.
     field, however, then this sum will always clearly diverge.
 """
 function PBCField(ϕfunc::Function, position::Vector2D{T}, origins, Lx, Ly, tolerance = sqrt(eps()) ) where T
-    # First evaluate the field within its own grid
+    # First evaluate the field within its own cell
     output::T = ϕfunc(position, origins)
     
     # Now start computing along square trajectories

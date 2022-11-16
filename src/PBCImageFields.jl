@@ -31,7 +31,7 @@ end
 function _bottom_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
     bottom_ydx::Int = -square_index
-    @inbounds for xdx ∈ UnitRange(-square_index, square_index)
+    @inbounds for xdx ∈ UnitRange(-square_index + one(square_index), square_index)
         edge_total += image_contribution( ϕfunc, position, image_origin.(origins, xdx, bottom_ydx, Lx, Ly) )
     end
     return edge_total
@@ -40,7 +40,7 @@ end
 function _right_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
     right_xdx::Int = square_index
-    @inbounds for ydx ∈ UnitRange(-square_index, square_index)
+    @inbounds for ydx ∈ UnitRange(-square_index + one(square_index), square_index)
         edge_total += image_contribution(ϕfunc, position, image_origin.(origins, right_xdx, ydx, Lx, Ly))
     end
     return edge_total
@@ -49,7 +49,7 @@ end
 function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
     edge_total::T = zero(T) 
     top_ydx::Int = square_index
-    @inbounds for xdx ∈ UnitRange(square_index, -square_index)
+    @inbounds for xdx ∈ Iterators.reverse( UnitRange(-square_index + one(square_index), square_index - one(square_index)) )
         edge_total += image_contribution(ϕfunc, position, image_origin.(origins, xdx, top_ydx, Lx, Ly))
     end
     return edge_total

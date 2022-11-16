@@ -14,5 +14,5 @@ r1 = Vector2D(Lx ÷ 8 + 0.5, Ly ÷ 8 + 0.5)
 
 sq_idx = 80
 
-@time _left_edge(strain_funcT, sq_idx, rposition, (r0, r1), Lx, Ly)
+@time PBCField(strain_funcT, rposition, (r0, r1), Lx, Ly)
 

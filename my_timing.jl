@@ -23,11 +23,11 @@ sq_idx = 80
 
 val = PBCField(strain_func, rposition, r0, Lx, Ly)
 
-Profile.Allocs.clear()
-Profile.Allocs.@profile sample_rate=1 PBCField(strain_func, rposition, r0, Lx, Ly)
-results = Profile.Allocs.fetch()
-PProf.Allocs.pprof(results; from_c = false)
+# Profile.Allocs.clear()
+# Profile.Allocs.@profile sample_rate=1 PBCField(strain_func, rposition, r0, Lx, Ly)
+# results = Profile.Allocs.fetch()
+# PProf.Allocs.pprof(results; from_c = false)
 
-while true end
+# while true end
 
 

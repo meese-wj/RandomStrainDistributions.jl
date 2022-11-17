@@ -5,6 +5,7 @@ const b0 = tetragonal_burgers_vectors[1]
 const b1 = -1 * b0
 
 strain_func(r::Vector2D{T}, r0) where T = b2g_shear(r - r0, b0) 
+strain_dis(r::Vector2D, dis::Dislocation) = b2g_shear( r, dis )
 
 rposition = Vector2D( 3., 3. )
 

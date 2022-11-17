@@ -4,7 +4,7 @@ using RandomStrainDistributions
 const b0 = tetragonal_burgers_vectors[1]
 const b1 = -1 * b0
 
-strain_funcT(r::Vector2D{T}, r0s) where T = b2g_shear(r - r0s[1], b0) + b2g_shear(r - r0s[2], b1) 
+strain_func(r::Vector2D{T}, r0) where T = b2g_shear(r - r0, b0) 
 
 rposition = Vector2D( 3., 3. )
 
@@ -14,5 +14,5 @@ r1 = Vector2D(Lx ÷ 8 + 0.5, Ly ÷ 8 + 0.5)
 
 sq_idx = 80
 
-@time PBCField(strain_funcT, rposition, (r0, r1), Lx, Ly)
+@time PBCField(strain_func, rposition, r0, Lx, Ly)
 

@@ -17,46 +17,46 @@ Compute the origin for the image dislocation in the (nx, ny) image cell.
 """
 image_origin( origin, nx, ny, Lx, Ly, xhat = Vector2D(1.0, 0.0), yhat = Vector2D(0.0, 1.0) ) = origin + nx * Lx * xhat + ny * Ly * yhat
 
-image_contribution( ϕfunc::Function, position::Vector2D{T}, _image_origin ) where T = ( ϕfunc( position, _image_origin ) )::T
+image_contribution( ϕfunc::Function, position::Vector2D{T}, _image_origin ) where T = ϕfunc( position, _image_origin )
 
-function _left_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
+function _left_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origin, Lx, Ly ) where T
     edge_total::T = zero(T) 
     left_xdx::Int = -square_index
     for ydx ∈ Iterators.reverse( UnitRange(-square_index, square_index) )
-        edge_total += image_contribution( ϕfunc, position, image_origin.(origins, left_xdx, ydx, Lx, Ly) )
+        edge_total += image_contribution( ϕfunc, position, image_origin(origin, left_xdx, ydx, Lx, Ly) )
     end
     return edge_total
 end
 
-function _bottom_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
+function _bottom_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origin, Lx, Ly ) where T
     edge_total::T = zero(T) 
     bottom_ydx::Int = -square_index
     @inbounds for xdx ∈ UnitRange(-square_index + one(square_index), square_index)
-        edge_total += image_contribution( ϕfunc, position, image_origin.(origins, xdx, bottom_ydx, Lx, Ly) )
+        edge_total += image_contribution( ϕfunc, position, image_origin(origin, xdx, bottom_ydx, Lx, Ly) )
     end
     return edge_total
 end
 
-function _right_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
+function _right_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origin, Lx, Ly ) where T
     edge_total::T = zero(T) 
     right_xdx::Int = square_index
     @inbounds for ydx ∈ UnitRange(-square_index + one(square_index), square_index)
-        edge_total += image_contribution(ϕfunc, position, image_origin.(origins, right_xdx, ydx, Lx, Ly))
+        edge_total += image_contribution(ϕfunc, position, image_origin(origin, right_xdx, ydx, Lx, Ly))
     end
     return edge_total
 end
 
-function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origins, Lx, Ly ) where T
+function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origin, Lx, Ly ) where T
     edge_total::T = zero(T) 
     top_ydx::Int = square_index
     @inbounds for xdx ∈ Iterators.reverse( UnitRange(-square_index + one(square_index), square_index - one(square_index)) )
-        edge_total += image_contribution(ϕfunc, position, image_origin.(origins, xdx, top_ydx, Lx, Ly))
+        edge_total += image_contribution(ϕfunc, position, image_origin(origin, xdx, top_ydx, Lx, Ly))
     end
     return edge_total
 end
 
 """
-    PBCField(ϕfunc::Function, position, origins, Lx, Ly, [tolerance])
+    PBCField(ϕfunc::Function, position, origin, Lx, Ly, [tolerance])
 
 Calculate the `ϕfunc`tion on a square periodic lattice of
 size Lx, Ly. 
@@ -71,9 +71,9 @@ size Lx, Ly.
     square trajectory should converge. If one supplies a divergent
     field, however, then this sum will always clearly diverge.
 """
-function PBCField(ϕfunc::Function, position::Vector2D{T}, origins, Lx, Ly, tolerance::T = sqrt(eps()) ) where T <: AbstractFloat
+function PBCField(ϕfunc::Function, position::Vector2D{T}, origin, Lx, Ly, tolerance::T = sqrt(eps()) ) where T <: AbstractFloat
     # First evaluate the field within its own cell
-    output::T = ϕfunc(position, origins)
+    output::T = ϕfunc(position, origin)
     
     # Now start computing along square trajectories
     square_index = zero(Int)
@@ -83,16 +83,16 @@ function PBCField(ϕfunc::Function, position::Vector2D{T}, origins, Lx, Ly, tole
         square_total::T = zero(output)
 
         # Start in top left and move down at constant x 
-        square_total += _left_edge(ϕfunc, square_index, position, origins, Lx, Ly)
+        square_total += _left_edge(ϕfunc, square_index, position, origin, Lx, Ly)
 
         # Now move along the bottom edge at constant y
-        square_total += _bottom_edge(ϕfunc, square_index, position, origins, Lx, Ly)
+        square_total += _bottom_edge(ϕfunc, square_index, position, origin, Lx, Ly)
         
         # Next move along the right edge at constant x
-        square_total += _right_edge(ϕfunc, square_index, position, origins, Lx, Ly)
+        square_total += _right_edge(ϕfunc, square_index, position, origin, Lx, Ly)
         
         # Finally move along the top edge at constant y
-        square_total += _top_edge(ϕfunc, square_index, position, origins, Lx, Ly)
+        square_total += _top_edge(ϕfunc, square_index, position, origin, Lx, Ly)
 
         # Now check that the contribution along the square is smaller
         # than the output * tolerance (in absolute scale)

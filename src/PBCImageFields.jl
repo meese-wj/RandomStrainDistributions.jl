@@ -55,6 +55,22 @@ function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, origi
     return edge_total
 end
 
+function _cycle_square(ϕfunc::Function, square_index, position::Vector2D{T}, origin, Lx, Ly) where T
+    local square_total::T = zero(T)
+    # Start in top left and move down at constant x 
+    square_total += _left_edge(ϕfunc, square_index, position, origin, Lx, Ly)
+
+    # Now move along the bottom edge at constant y
+    square_total += _bottom_edge(ϕfunc, square_index, position, origin, Lx, Ly)
+    
+    # Next move along the right edge at constant x
+    square_total += _right_edge(ϕfunc, square_index, position, origin, Lx, Ly)
+    
+    # Finally move along the top edge at constant y
+    square_total += _top_edge(ϕfunc, square_index, position, origin, Lx, Ly)
+    return square_total
+end
+
 """
     PBCField(ϕfunc::Function, position, origin, Lx, Ly, [tolerance])
 
@@ -79,20 +95,8 @@ function PBCField(ϕfunc::Function, position::Vector2D{T}, origin, Lx, Ly, toler
     square_index = zero(Int)
     not_complete::Bool = true
     while not_complete
-        square_index::Int += one(square_index)
-        square_total::T = zero(output)
-
-        # Start in top left and move down at constant x 
-        square_total += _left_edge(ϕfunc, square_index, position, origin, Lx, Ly)
-
-        # Now move along the bottom edge at constant y
-        square_total += _bottom_edge(ϕfunc, square_index, position, origin, Lx, Ly)
-        
-        # Next move along the right edge at constant x
-        square_total += _right_edge(ϕfunc, square_index, position, origin, Lx, Ly)
-        
-        # Finally move along the top edge at constant y
-        square_total += _top_edge(ϕfunc, square_index, position, origin, Lx, Ly)
+        square_index += one(square_index)
+        square_total::T = _cycle_square(ϕfunc, square_index, position, origin, Lx, Ly)
 
         # Now check that the contribution along the square is smaller
         # than the output * tolerance (in absolute scale)

@@ -1,4 +1,10 @@
+cd(@__DIR__)
+using Pkg
+Pkg.activate(".")
+
 using RandomStrainDistributions
+using Profile
+using PProf
 
 
 const b0 = tetragonal_burgers_vectors[1]
@@ -15,5 +21,13 @@ r1 = Vector2D(Lx ÷ 8 + 0.5, Ly ÷ 8 + 0.5)
 
 sq_idx = 80
 
-@time PBCField(strain_func, rposition, r0, Lx, Ly)
+val = PBCField(strain_func, rposition, r0, Lx, Ly)
+
+Profile.Allocs.clear()
+Profile.Allocs.@profile sample_rate=1 PBCField(strain_func, rposition, r0, Lx, Ly)
+results = Profile.Allocs.fetch()
+PProf.Allocs.pprof(results; from_c = false)
+
+while true end
+
 

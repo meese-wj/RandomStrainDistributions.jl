@@ -5,7 +5,7 @@ using ..PhysicalVectors
 using ..CrystalDefects
 using ..PBCImageFields
 
-export b1g_shear, b2g_shear, bxg_shears, Δsplitting, b1gshear_PBC, b2g_shear_PBC, b2g_PBC_manual
+export b1g_shear, b2g_shear, bxg_shears, Δsplitting
 
 @doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
@@ -100,92 +100,5 @@ bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position,
 Calculate the level-splitting Δ as the quadrature sum of the strains.
 """
 Δsplitting(ε₁, ε₂) = sqrt(ε₁^2 + ε₂^2)
-
-function b1g_shear_PBC(position, dis::Dislocation, Lx, Ly = Lx, tolerance = sqrt(eps()))
-    ϕfunc(r, origin) = let bob = BurgersVector(dis) 
-        b1g_shear(r - origin, bob)
-    end
-    return PBCField(ϕfunc, position, DislocationOrigin(dis), Lx, Ly, tolerance)
-end
-
-function b2g_shear_PBC(position, dis::Dislocation, Lx, Ly = Lx, tolerance = sqrt(eps()))
-    ϕfunc(r, origin) = let bob = BurgersVector(dis) 
-        b2g_shear(r - origin, bob)
-    end
-    return PBCField(ϕfunc, position, DislocationOrigin(dis), Lx, Ly, tolerance)
-end
-
-PBC_cell_shift( nx, ny, Lx, Ly ) = Vector2D( nx * Lx, ny * Ly )
-
-function _left_edge( ϕfunc::Function, square_index, position::Vector2D{T}, dis::Dislocation, Lx, Ly ) where T <: AbstractFloat
-    edge_total::T = zero(T)
-    left_xdx::Int = -square_index
-    for ydx ∈ Iterators.reverse( UnitRange(-square_index, square_index) )
-        edge_total += ϕfunc( position, shift_origin( dis, PBC_cell_shift(left_xdx, ydx, Lx, Ly) ) )
-    end
-    return edge_total
-end
-
-function _bottom_edge( ϕfunc::Function, square_index, position::Vector2D{T}, dis::Dislocation, Lx, Ly ) where T <: AbstractFloat
-    edge_total::T = zero(T)
-    bottom_ydx::Int = -square_index
-    for xdx ∈ UnitRange(-square_index + one(Int), square_index)
-        edge_total += ϕfunc( position, shift_origin( dis, PBC_cell_shift(xdx, bottom_ydx, Lx, Ly) ) )
-    end
-    return edge_total
-end
-
-function _right_edge( ϕfunc::Function, square_index, position::Vector2D{T}, dis::Dislocation, Lx, Ly ) where T <: AbstractFloat
-    edge_total::T = zero(T)
-    right_xdx::Int = square_index
-    for ydx ∈ UnitRange(-square_index + one(Int), square_index)
-        edge_total += ϕfunc( position, shift_origin( dis, PBC_cell_shift(right_xdx, ydx, Lx, Ly) ) )
-    end
-    return edge_total
-end
-
-function _top_edge( ϕfunc::Function, square_index, position::Vector2D{T}, dis::Dislocation, Lx, Ly ) where T <: AbstractFloat
-    edge_total::T = zero(T)
-    top_ydx::Int = square_index
-    for xdx ∈ Iterators.reverse( UnitRange(-square_index + one(Int), square_index - one(Int)) )
-        edge_total += ϕfunc( position, shift_origin( dis, PBC_cell_shift(xdx, top_ydx, Lx, Ly) ) )
-    end
-    return edge_total
-end
-
-function _cycle_square( ϕfunc::Function, square_index, position::Vector2D{T}, dis::Dislocation, Lx, Ly ) where T <: AbstractFloat
-    square_total::T = zero(T)
-    square_total += _left_edge(ϕfunc, square_index, position, dis, Lx, Ly)
-    square_total += _bottom_edge(ϕfunc, square_index, position, dis, Lx, Ly)
-    square_total += _right_edge(ϕfunc, square_index, position, dis, Lx, Ly)
-    square_total += _top_edge(ϕfunc, square_index, position, dis, Lx, Ly)
-    return square_total
-end
-
-function b2g_PBC_manual( ϕfunc::Function, position::Vector2D{T}, dis::Dislocation, Lx, Ly, tolerance::T = sqrt(eps()) ) where T <: AbstractFloat
-    # First evaluate the field within its own cell
-    # ϕfunc(r, d) = b2g_shear(r, d)
-    output::T = ϕfunc(position, dis)
-    
-    # Now start computing along square trajectories
-    square_index = zero(Int)
-    not_complete::Bool = true
-    while not_complete
-        square_index += one(square_index)
-        square_total::T = _cycle_square(ϕfunc, square_index, position, dis, Lx, Ly)   
-
-        # Now check that the contribution along the square is smaller
-        # than the output * tolerance (in absolute scale)
-        # @show square_index
-        # @show square_total
-        output += square_total
-        # @show output
-        complete = abs(square_total) / abs(output) < tolerance
-
-        not_complete = !complete
-    end
-
-    return output, square_index
-end
     
 end # module ShearFunctions

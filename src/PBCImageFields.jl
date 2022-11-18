@@ -63,7 +63,7 @@ function _cycle_square( ϕfunc::Function, square_index, position::Vector2D{T}, d
 end
 
 """
-    PBCField(ϕfunc::Function, position, origin, Lx, Ly, [tolerance])
+    PBCField(ϕfunc::Function, position, dislocation, Lx, Ly, [tolerance])
 
 Calculate the `ϕfunc`tion on a square periodic lattice of
 size Lx, Ly. 

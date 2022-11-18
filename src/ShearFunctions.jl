@@ -3,8 +3,9 @@ module ShearFunctions
 using StaticArrays
 using ..PhysicalVectors
 using ..CrystalDefects
+using ..PBCImageFields
 
-export b1g_shear, b2g_shear, bxg_shears, Δsplitting
+export b1g_shear, b2g_shear, bxg_shears, Δsplitting, b1gshear_PBC, b2g_shear_PBC
 
 @doc raw"""
     b1g_shear( eval_r::Vector2D, bob::Vector2D )
@@ -99,5 +100,19 @@ bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position,
 Calculate the level-splitting Δ as the quadrature sum of the strains.
 """
 Δsplitting(ε₁, ε₂) = sqrt(ε₁^2 + ε₂^2)
+
+function b1g_shear_PBC(position, dis::Dislocation, Lx, Ly = Lx, tolerance = sqrt(eps()))
+    ϕfunc(r, origin) = let bob = BurgersVector(dis) 
+        b1g_shear(r - origin, bob)
+    end
+    return PBCField(ϕfunc, position, DislocationOrigin(dis), Lx, Ly, tolerance)
+end
+
+function b2g_shear_PBC(position, dis::Dislocation, Lx, Ly = Lx, tolerance = sqrt(eps()))
+    ϕfunc(r, origin) = let bob = BurgersVector(dis) 
+        b2g_shear(r - origin, bob)
+    end
+    return PBCField(ϕfunc, position, DislocationOrigin(dis), Lx, Ly, tolerance)
+end
     
 end # module ShearFunctions

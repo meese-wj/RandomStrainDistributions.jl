@@ -3,6 +3,7 @@ module DisorderConfigurations
 using StaticArrays
 using ..PhysicalVectors
 using ..CrystalDefects
+using ..PBCImageFields
 using ..ShearFunctions
 using ..RandomStrainDistributions: BurgersVector, DislocationOrigin
 
@@ -29,7 +30,7 @@ generate_disorder( dis_config::DisorderConfiguration ) = error("No implementatio
 
 mutable struct ShearFromDislocations{T <: Number} <: DisorderConfiguration
     include_Δ::Bool
-    vector_diff::Function
+    tolerance::T
     axes::Tuple{Int, Int}
     dislocations::Vector{Dislocation2D{T}}
     strain_fields::Array{T, 3}
@@ -42,10 +43,10 @@ _field_columns(b::Bool) = b ? 3 : 2
 
 Convenient keyword constructor for the `ShearFromDislocations` type. 
 """
-function ShearFromDislocations{T}( Lx, Ly, diff, include_Δ::Bool = false ) where T
+function ShearFromDislocations{T}( Lx, Ly, include_Δ::Bool = false, tolerance::T = sqrt(eps()) ) where T
     axes = (Lx, Ly)
     dislocations = Vector{Dislocation2D{T}}[]
-    return ShearFromDislocations( include_Δ, diff, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
+    return ShearFromDislocations( include_Δ, tolerance, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
 end
 
 ShearFromDislocations(args...) = ShearFromDislocations{Float64}(args...)
@@ -54,10 +55,12 @@ set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( 
 
 function compute_strains!( sfd::ShearFromDislocations )
     include_Δ = sfd.include_Δ
-    for (xdx, ydx) ∈ collect( Iterators.product( 1:sfd.axes[1], 1:sfd.axes[2] ) )
+    for (xdx, ydx) ∈ collect( Iterators.product( UnitRange(1, sfd.axes[1]), UnitRange(1, sfd.axes[2]) ) )
         for dis_idx ∈ eachindex(sfd.dislocations)
-            temp_r = Vector2D( Float64.( (xdx, ydx) ) )
-            (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[dis_idx]; diff = sfd.vector_diff )
+            temp_r = Vector2D( Float64(xdx), Float64(ydx) )
+            # (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[dis_idx]; diff = sfd.vector_diff )
+            b1g = PBCField( b1g_shear, temp_r, sfd.dislocations[dis_idx], sfd.axes... )[1]
+            b2g = PBCField( b2g_shear, temp_r, sfd.dislocations[dis_idx], sfd.axes... )[1]
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
         end
@@ -72,11 +75,12 @@ end
 function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
     compute_strains!( sfd )
     copyto!( disorder_field, sfd.strain_fields )
+    disorder_field = sfd.strain_fields
     return nothing 
 end
 
-function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC(x, y, Lx, Ly) )
-    sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
+function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, tolerance = sqrt(eps()) )
+    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance )
     set_dislocations!(sfd, dislocations)
     generate_disorder!(disorder_field, sfd)
 end
@@ -89,8 +93,8 @@ function generate_disorder( sfd::ShearFromDislocations )
     return disorder_fields
 end
 
-function generate_disorder(Lx::Int, Ly::Int, dislocations, include_Δ = false, diff = (x, y) -> subtract_PBC(x, y, Lx, Ly))
-    sfd = ShearFromDislocations( Lx, Ly, diff, include_Δ )
+function generate_disorder(Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()) )
+    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance )
     set_dislocations!(sfd, dislocations)
     disorder_fields = make_fields(sfd)
     generate_disorder!(disorder_fields, sfd)

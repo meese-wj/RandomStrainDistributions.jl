@@ -92,10 +92,7 @@ function PBCField( ϕfunc::Function, position::Vector2D{T}, dis::Dislocation, Lx
 
         # Now check that the contribution along the square is smaller
         # than the output * tolerance (in absolute scale)
-        # @show square_index
-        # @show square_total
         output += square_total
-        # @show output
         complete = abs(square_total) / abs(output) < tolerance
 
         not_complete = !complete
@@ -103,28 +100,5 @@ function PBCField( ϕfunc::Function, position::Vector2D{T}, dis::Dislocation, Lx
 
     return output, square_index
 end
-# function PBCField(ϕfunc::Function, position::Vector2D{T}, origin, Lx, Ly, tolerance::T = sqrt(eps()) ) where T <: AbstractFloat
-#     # First evaluate the field within its own cell
-#     output::T = ϕfunc(position, origin)
-    
-#     # Now start computing along square trajectories
-#     square_index = zero(Int)
-#     not_complete::Bool = true
-#     while not_complete
-#         square_index += one(square_index)
-#         square_total::T = _cycle_square(ϕfunc, square_index, position, origin, Lx, Ly)
-
-#         # Now check that the contribution along the square is smaller
-#         # than the output * tolerance (in absolute scale)
-#         output += square_total
-#         complete = abs(square_total) / abs(output) < tolerance
-
-#         not_complete = !complete
-#     end
-
-#     return output, square_index
-# end
-
-
     
 end # module PBCImageFields

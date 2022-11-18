@@ -2,6 +2,7 @@ module DisorderConfigurations
 
 using StaticArrays
 using ..PhysicalVectors
+using ..CrystalDefects
 using ..ShearFunctions
 using ..RandomStrainDistributions: BurgersVector, DislocationOrigin
 
@@ -30,7 +31,7 @@ mutable struct ShearFromDislocations{T <: Number} <: DisorderConfiguration
     include_Δ::Bool
     vector_diff::Function
     axes::Tuple{Int, Int}
-    dislocations::Array{Vector2D{T}, 2}
+    dislocations::Vector{Dislocation2D{T}}
     strain_fields::Array{T, 3}
 end
 
@@ -43,7 +44,7 @@ Convenient keyword constructor for the `ShearFromDislocations` type.
 """
 function ShearFromDislocations{T}( Lx, Ly, diff, include_Δ::Bool = false ) where T
     axes = (Lx, Ly)
-    dislocations = Array{Vector2D{T}, 2}(undef, (0, 0))
+    dislocations = Vector{Dislocation2D{T}}[]
     return ShearFromDislocations( include_Δ, diff, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
 end
 
@@ -54,10 +55,9 @@ set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( 
 function compute_strains!( sfd::ShearFromDislocations )
     include_Δ = sfd.include_Δ
     for (xdx, ydx) ∈ collect( Iterators.product( 1:sfd.axes[1], 1:sfd.axes[2] ) )
-        for dis_idx ∈ 1:size(sfd.dislocations)[2]
+        for dis_idx ∈ eachindex(sfd.dislocations)
             temp_r = Vector2D( Float64.( (xdx, ydx) ) )
-            (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[Int(BurgersVector), dis_idx]; 
-                                     source_r = sfd.dislocations[Int(DislocationOrigin), dis_idx], diff = sfd.vector_diff )
+            (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[dis_idx]; diff = sfd.vector_diff )
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
         end

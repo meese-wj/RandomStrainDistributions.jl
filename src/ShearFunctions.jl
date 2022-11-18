@@ -19,7 +19,7 @@ Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bo
 * This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
 
 ```math
-ε_{B_{1g}}^{(2 - {\rm Fe})} = \frac{1}{2} \left(  \partial_y u_x + \partial_x u_y  \right) = ε_{xy}^{(1-{\rm Fe})}.
+ε_{B_{1g}}^{(2 - {\rm Fe})} = \partial_y u_x + \partial_x u_y = ε_{xy}^{(1-{\rm Fe})}.
 ```
 
 # Examples
@@ -29,7 +29,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 function b1g_shear( eval_r::Vector2D, bob::Vector2D )
-    return 1/(4π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return 1/(2π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 b1g_shear(position, dis::Dislocation) = b1g_shear( position - DislocationOrigin(dis), BurgersVector(dis) )
 

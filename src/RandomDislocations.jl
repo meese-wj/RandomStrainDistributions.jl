@@ -102,7 +102,7 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations, ::Type{
     return all_dislocations
 end
 
-const tetragonal_burgers_vectors = [ Vector2D(1., 0), Vector2D(-1., 0), Vector2D(0, 1.), Vector2D(0, -1.) ]
+const tetragonal_burgers_vectors = ( Vector2D(1., 0), Vector2D(-1., 0), Vector2D(0, 1.), Vector2D(0, -1.) )
 
 """
 Struct containing uniform distribution for the Burger's vectors and their locations 
@@ -127,10 +127,11 @@ Convenient keyword constructor for the `UniformBurgersVector` struct which makes
 """
 function UniformBurgersVector(; Lx, Ly = Lx, burgers_vectors )
     axes = (Lx, Ly)
+    bv = [ bob for bob ∈ burgers_vectors ]
     rand_pos = ( DiscreteUniform( 1, Lx ), DiscreteUniform(1, Ly) )
     rand_bv = DiscreteUniform(1, length(burgers_vectors))
     return UniformBurgersVector( axes, 
-                                 burgers_vectors,
+                                 bv,
                                  rand_pos,
                                  rand_bv )
 end

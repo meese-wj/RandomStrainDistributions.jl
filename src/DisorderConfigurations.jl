@@ -56,11 +56,10 @@ set_dislocations!( sfd::ShearFromDislocations, dislocation_property_array ) = ( 
 function compute_strains!( sfd::ShearFromDislocations )
     include_Δ = sfd.include_Δ
     for (xdx, ydx) ∈ collect( Iterators.product( UnitRange(1, sfd.axes[1]), UnitRange(1, sfd.axes[2]) ) )
-        for dis_idx ∈ eachindex(sfd.dislocations)
+        for disloc ∈ sfd.dislocations
             temp_r = Vector2D( Float64(xdx), Float64(ydx) )
-            # (b1g, b2g) = bxg_shears( temp_r, sfd.dislocations[dis_idx]; diff = sfd.vector_diff )
-            b1g = PBCField( b1g_shear, temp_r, sfd.dislocations[dis_idx], sfd.axes... )[1]
-            b2g = PBCField( b2g_shear, temp_r, sfd.dislocations[dis_idx], sfd.axes... )[1]
+            b1g = PBCField( b1g_shear, temp_r, disloc, sfd.axes... )[1]
+            b2g = PBCField( b2g_shear, temp_r, disloc, sfd.axes... )[1]
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
         end

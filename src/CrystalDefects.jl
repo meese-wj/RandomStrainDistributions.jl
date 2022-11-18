@@ -3,7 +3,7 @@ module CrystalDefects
 using ..PhysicalVectors
 import Base: eltype
 
-export CrystalDefect, Dislocation, Dislocation2D, BurgersVector, DislocationOrigin, eltype
+export CrystalDefect, Dislocation, Dislocation2D, BurgersVector, DislocationOrigin, shift_origin, eltype
 
 """
     abstract type CrystalDefect end
@@ -25,6 +25,7 @@ Parent type for all dislocation [`CrystalDefect`](@ref)s.
 abstract type Dislocation <: CrystalDefect end
 BurgersVector(dis::Dislocation) = throw(MethodError(BurgersVector, (dis,)))
 DislocationOrigin(dis::Dislocation) = throw(MethodError(DislocationOrigin, (dis,)))
+shift_origin(dis::T, shift) where T = T( BurgersVector(dis), DislocationOrigin(dis) + shift )
 Base.eltype(dis::Dislocation) = Base.eltype(BurgersVector(dis))
 
 struct Dislocation2D{T <: AbstractFloat} <: Dislocation

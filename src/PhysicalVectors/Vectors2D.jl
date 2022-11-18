@@ -140,7 +140,7 @@ julia> A + B
 Vector2D{Float64}(2.0, 4.0)
 ```
 """
-Base.:+(A::Vector2D, B::Vector2D) = Vector2D( xcomponent(A) + xcomponent(B), ycomponent(A) + ycomponent(B) )
+@inline Base.:+(A::Vector2D, B::Vector2D) = Vector2D( xcomponent(A) + xcomponent(B), ycomponent(A) + ycomponent(B) )
 # Base.:+(A::Vector2D, B::Vector2D) = Vector2D( A.vec .+ B.vec )
 
 """
@@ -159,7 +159,7 @@ julia> λ * A
 Vector2D{Float64}(2.0, 4.0)
 ```
 """
-Base.:*(λ, A::Vector2D) = Vector2D( λ * xcomponent(A), λ * ycomponent(A) )
+@inline Base.:*(λ, A::Vector2D) = Vector2D( λ * xcomponent(A), λ * ycomponent(A) )
 # Base.:*(λ, A::Vector2D) = Vector2D( λ .* A.vec )
 
 """
@@ -178,7 +178,7 @@ julia> A ⋅ B
 5.0
 ```
 """
-⋅(A::Vector2D, B::Vector2D) = xcomponent(A) * xcomponent(B) + ycomponent(A) * ycomponent(B)
+@inline ⋅(A::Vector2D, B::Vector2D) = xcomponent(A) * xcomponent(B) + ycomponent(A) * ycomponent(B)
 
 #= ========================================================================================= =#
 #  Includes for the Vector2D struct.

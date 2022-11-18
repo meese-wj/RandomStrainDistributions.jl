@@ -33,8 +33,8 @@ struct Dislocation2D{T <: AbstractFloat} <: Dislocation
     Rvector::Vector2D{T}
 end
 
-BurgersVector( dis::Dislocation2D ) = dis.Bvector
-DislocationOrigin( dis::Dislocation2D ) = dis.Rvector
+@inline BurgersVector( dis::Dislocation2D ) = dis.Bvector
+@inline DislocationOrigin( dis::Dislocation2D ) = dis.Rvector
 
 Dislocation2D{T}(::UndefInitializer) where T = Dislocation2D{T}( Vector2D{T}(undef), Vector2D{T}(undef) )
 

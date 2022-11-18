@@ -28,7 +28,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 -0.07957747154594767
 ```
 """
-function b1g_shear( eval_r::Vector2D, bob::Vector2D )
+@inline function b1g_shear( eval_r::Vector2D, bob::Vector2D )
     return 1/(2π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 b1g_shear(position, dis::Dislocation) = b1g_shear( position - DislocationOrigin(dis), BurgersVector(dis) )
@@ -54,7 +54,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 0.15915494309189535
 ```
 """
-function b2g_shear( eval_r::Vector2D, bob::Vector2D )
+@inline function b2g_shear( eval_r::Vector2D, bob::Vector2D )
     return -1/(2π) * ( xcomponent(eval_r) * ycomponent(eval_r) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
 b2g_shear(position, dis::Dislocation) = b2g_shear( position - DislocationOrigin(dis), BurgersVector(dis) )
@@ -99,7 +99,7 @@ bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position,
 
 Calculate the level-splitting Δ as the quadrature sum of the strains.
 """
-Δsplitting(ε₁, ε₂) = hypot(ε₁, ε₂)
+@inline Δsplitting(ε₁, ε₂) = hypot(ε₁, ε₂)
 # Δsplitting(ε₁, ε₂) = sqrt(ε₁^2 + ε₂^2)
     
 end # module ShearFunctions

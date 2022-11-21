@@ -9,7 +9,7 @@ module PBCImageFields
 using ..PhysicalVectors
 using ..CrystalDefects
 
-export PBCField, PBC_cell_shift
+export PBCField, PBC_cell_shift, PBCField_value, PBCField_squares
 
 PBC_cell_shift( nx, ny, Lx, Ly ) = Vector2D( nx * Lx, ny * Ly )
 
@@ -66,7 +66,8 @@ end
     PBCField(ϕfunc::Function, position, dislocation, Lx, Ly, [tolerance])
 
 Calculate the `ϕfunc`tion on a square periodic lattice of
-size Lx, Ly. 
+size Lx, Ly. Returns a `Tuple` of the answer and how many 
+square trajectories were taken until convergence was met.
 
 # Additional Information
 
@@ -78,7 +79,7 @@ size Lx, Ly.
     square trajectory should converge. If one supplies a divergent
     field, however, then this sum will always clearly diverge.
 """
-function PBCField( ϕfunc::Function, position::Vector2D{T}, dis::Dislocation, Lx, Ly, tolerance::T = sqrt(eps()) ) where T <: AbstractFloat
+function PBCField( ϕfunc::F, position::Vector2D{T}, dis::Dislocation, Lx, Ly, tolerance::T = sqrt(eps()) ) where {F, T <: AbstractFloat}
     # First evaluate the field within its own cell
     # ϕfunc(r, d) = b2g_shear(r, d)
     output::T = ϕfunc(position, dis)
@@ -100,5 +101,7 @@ function PBCField( ϕfunc::Function, position::Vector2D{T}, dis::Dislocation, Lx
 
     return output, square_index
 end
+@inline PBCField_value(ϕfunc::F, position::Vector2D{T}, dis::Dislocation, Lx, Ly, tolerance::T = sqrt(eps())) where {F, T} = PBCField(ϕfunc, position, dis, Lx, Ly, tolerance)[1]
+@inline PBCField_squares(ϕfunc::F, position::Vector2D{T}, dis::Dislocation, Lx, Ly, tolerance::T = sqrt(eps())) where {F, T} = PBCField(ϕfunc, position, dis, Lx, Ly, tolerance)[2]
     
 end # module PBCImageFields

@@ -100,6 +100,5 @@ bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position,
 Calculate the level-splitting Δ as the quadrature sum of the strains.
 """
 @inline Δsplitting(ε₁, ε₂) = hypot(ε₁, ε₂)
-# Δsplitting(ε₁, ε₂) = sqrt(ε₁^2 + ε₂^2)
     
 end # module ShearFunctions

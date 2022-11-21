@@ -29,24 +29,25 @@ end
         end
     end
 
-    println("  Testing allocations in a lattice sweep")
-    @elapsed @testset "Lattice sweep without allocations" begin
-        _Lx = 64
-        _Ly = _Lx
-        _r0 = Vector2D( _Lx ÷ 2 + 0.5, _Ly ÷ 2 + 0.5 )
+    # TODO: Fix this test
+    # println("  Testing allocations in a lattice sweep")
+    # @elapsed @testset "Lattice sweep without allocations" begin
+    #     _Lx = 64
+    #     _Ly = _Lx
+    #     _r0 = Vector2D( _Lx ÷ 2 + 0.5, _Ly ÷ 2 + 0.5 )
 
-        for _b0 ∈ tetragonal_burgers_vectors
-            _dis = Dislocation2D( _b0, _r0 )
+    #     for _b0 ∈ tetragonal_burgers_vectors
+    #         _dis = Dislocation2D( _b0, _r0 )
 
-            tm = @timed PBC_lattice(b1g_shear, _dis, _Lx, _Ly)
-            tm = @timed PBC_lattice(b1g_shear, _dis, _Lx, _Ly)
-            # @test tm.bytes == zero(tm.bytes)
+    #         tm = @timed PBC_lattice(b1g_shear, _dis, _Lx, _Ly)
+    #         tm = @timed PBC_lattice(b1g_shear, _dis, _Lx, _Ly)
+    #         # @test tm.bytes == zero(tm.bytes)
             
-            tm = @timed PBC_lattice(b2g_shear, _dis, _Lx, _Ly)
-            @code_warntype tm = @timed PBC_lattice(b2g_shear, _dis, _Lx, _Ly)
-            # @test tm.bytes == zero(tm.bytes)
-        end
-    end
-    println()
+    #         tm = @timed PBC_lattice(b2g_shear, _dis, _Lx, _Ly)
+    #         tm = @timed PBC_lattice(b2g_shear, _dis, _Lx, _Ly)
+    #         # @test tm.bytes == zero(tm.bytes)
+    #     end
+    # end
+    # println()
 
 end

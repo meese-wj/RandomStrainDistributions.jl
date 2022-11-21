@@ -1,3 +1,6 @@
+using Test
+using RandomStrainDistributions
+
 
 function unique_origins(origins)
     distinct_origins = eltype(origins)[]

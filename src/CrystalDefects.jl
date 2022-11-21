@@ -3,7 +3,7 @@ module CrystalDefects
 using ..PhysicalVectors
 import Base: eltype
 
-export CrystalDefect, Dislocation, Dislocation2D, BurgersVector, DislocationOrigin, shift_origin, eltype
+export CrystalDefect, Dislocation, Dislocation2D, burgersvector, dislocationorigin, shift_origin, eltype
 
 """
     abstract type CrystalDefect end
@@ -18,23 +18,23 @@ Parent type for all dislocation [`CrystalDefect`](@ref)s.
 
 # Required methods
 
-* `BurgersVector`: return a copy of the Dislocation Burgers vector
-* `DislocationOrigin`: return a copy of the Dislocation origin.
+* `burgersvector`: return a copy of the Dislocation Burgers vector
+* `dislocationorigin`: return a copy of the Dislocation origin.
 
 """
 abstract type Dislocation <: CrystalDefect end
-BurgersVector(dis::Dislocation) = throw(MethodError(BurgersVector, (dis,)))
-DislocationOrigin(dis::Dislocation) = throw(MethodError(DislocationOrigin, (dis,)))
-shift_origin(dis::T, shift) where T = T( BurgersVector(dis), DislocationOrigin(dis) + shift )
-Base.eltype(dis::Dislocation) = Base.eltype(BurgersVector(dis))
+burgersvector(dis::Dislocation) = throw(MethodError(burgersvector, (dis,)))
+dislocationorigin(dis::Dislocation) = throw(MethodError(dislocationorigin, (dis,)))
+shift_origin(dis::T, shift) where T = T( burgersvector(dis), dislocationorigin(dis) + shift )
+Base.eltype(dis::Dislocation) = Base.eltype(burgersvector(dis))
 
 struct Dislocation2D{T <: AbstractFloat} <: Dislocation
     Bvector::Vector2D{T}
     Rvector::Vector2D{T}
 end
 
-@inline BurgersVector( dis::Dislocation2D ) = dis.Bvector
-@inline DislocationOrigin( dis::Dislocation2D ) = dis.Rvector
+@inline burgersvector( dis::Dislocation2D ) = dis.Bvector
+@inline dislocationorigin( dis::Dislocation2D ) = dis.Rvector
 
 Dislocation2D{T}(::UndefInitializer) where T = Dislocation2D{T}( Vector2D{T}(undef), Vector2D{T}(undef) )
 

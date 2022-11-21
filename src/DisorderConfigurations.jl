@@ -5,7 +5,7 @@ using ..PhysicalVectors
 using ..CrystalDefects
 using ..PBCImageFields
 using ..ShearFunctions
-using ..RandomStrainDistributions: BurgersVector, DislocationOrigin
+using ..RandomStrainDistributions: burgersvector, dislocationorigin
 
 export DisorderConfiguration, generate_disorder, generate_disorder!
 

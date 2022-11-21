@@ -26,14 +26,14 @@ end
             
             @testset "Topological charge sums to zero" begin
                 # this is tested by making sure the burgers vectors sum to zero
-                @test isequal( sum( BurgersVector.( all_dis[:] ) ), Vector2D(0., 0.) )
+                @test isequal( sum( burgersvector.( all_dis[:] ) ), Vector2D(0., 0.) )
             end
 
             @testset "Burgers Vector selection" begin
                 # this tests that the only Burgers vectors selected are those provided
                 # in the tetragonal_burgers_vectors
                 those_provided = true
-                for rand_bv ∈ BurgersVector.( all_dis[:] )
+                for rand_bv ∈ burgersvector.( all_dis[:] )
                     count = zero(Int)
                     for provided_bv ∈ tetragonal_burgers_vectors
                         count += isequal(rand_bv, provided_bv) ? one(count) : zero(count)
@@ -49,7 +49,7 @@ end
 
             @testset "All origins are unique" begin
                 # this makes sure no two dislocations sit on top of one another
-                @test length( unique_origins( DislocationOrigin.(all_dis[:]) ) ) == length(all_dis)
+                @test length( unique_origins( dislocationorigin.(all_dis[:]) ) ) == length(all_dis)
             end
 
             @testset "All origins are within the grid" begin
@@ -57,7 +57,7 @@ end
                 # and that no dislocations are centered on the grid itself.
                 all_inside = true
                 no_grid_touching = true
-                for origin ∈ DislocationOrigin.(all_dis[:])
+                for origin ∈ dislocationorigin.(all_dis[:])
                     if !( 0 < xcomponent(origin) < Lx + one(Lx) && 0 < ycomponent(origin) < Ly + one(Ly) )
                         all_inside = false
                     end

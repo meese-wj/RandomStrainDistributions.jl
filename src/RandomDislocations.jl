@@ -52,7 +52,7 @@ function origin_already_present( idx, origin, all_dislocations )
     end
     already_here = false
     for dis_idx ∈ 1:(idx-1)
-        already_here = isequal( origin, DislocationOrigin( all_dislocations[dis_idx] ) )
+        already_here = isequal( origin, dislocationorigin( all_dislocations[dis_idx] ) )
         already_here ? break : continue
     end
     return already_here
@@ -61,14 +61,14 @@ end
 function unique_origin(idx, origin, all_dislocations, rbv, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
     # Be sure that the same origin is not used multiple times
     while origin_already_present( idx, origin, all_dislocations )
-        origin = DislocationOrigin( rand_dislocation( rbv, T ) )
+        origin = dislocationorigin( rand_dislocation( rbv, T ) )
     end
     return origin
 end
 
 function set_dislocation!(all_dislocations, idx, dis::T, rbv::RandomDislocation) where T <: Dislocation
-    origin = unique_origin(idx, DislocationOrigin(dis), all_dislocations, rbv, T)
-    all_dislocations[idx] = T( BurgersVector(dis), DislocationOrigin(dis) )
+    origin = unique_origin(idx, dislocationorigin(dis), all_dislocations, rbv, T)
+    all_dislocations[idx] = T( burgersvector(dis), dislocationorigin(dis) )
     return nothing
 end
 
@@ -93,9 +93,9 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations, ::Type{
     end
 
     for (old, new) ∈ zip( 1:unique_dislocations, (unique_dislocations + one(Int):num_dislocations) )
-        old_burger = BurgersVector(all_dislocations[old])
+        old_burger = burgersvector(all_dislocations[old])
         new_burger = -1 * old_burger
-        new_origin = unique_origin( new, DislocationOrigin(all_dislocations[old]), all_dislocations, rbv, T )
+        new_origin = unique_origin( new, dislocationorigin(all_dislocations[old]), all_dislocations, rbv, T )
         set_dislocation!(all_dislocations, new, T(new_burger, new_origin), rbv)
     end
 

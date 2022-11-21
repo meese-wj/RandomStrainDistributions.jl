@@ -47,14 +47,14 @@ system_size( rsd::RandomStrainDistribution ) = error("No implementation for $(ty
 # function calculate_strains( eval_r::Vector2D, rsd::RandomStrainDistribution )
 #     all_dislocations = collect_dislocations( rsd )
 #     axes = system_size( rsd )
-#     num_dis = length( all_dislocations[:, Int(BurgersVector)] )
+#     num_dis = length( all_dislocations[:, Int(burgersvector)] )
 #     b1g = zero(eltype(eval_r.vec))
 #     b2g = zero(eltype(eval_r.vec))
 #     temp_eval_r = Vector2D( eval_r )
 #     for dis_idx ∈ 1:num_dis
 #         Vector2D!( temp_eval_r, eval_r )
-#         new_strains = bxg_shears!( temp_eval_r, all_dislocations[dis_idx, Int(BurgersVector)];
-#                                    source_r = all_dislocations[dis_idx, Int(DislocationOrigin) ],
+#         new_strains = bxg_shears!( temp_eval_r, all_dislocations[dis_idx, Int(burgersvector)];
+#                                    source_r = all_dislocations[dis_idx, Int(dislocationorigin) ],
 #                                    diff = (A, B) -> subtract_PBC!( A, B; Lx = axes[1], Ly = axes[2] ) )
 #         b1g += new_strains[1]
 #         b2g += new_strains[2]

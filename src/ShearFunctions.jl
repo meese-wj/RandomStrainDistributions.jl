@@ -31,7 +31,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 @inline function b1g_shear( eval_r::Vector2D, bob::Vector2D )
     return 1/(2π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
-b1g_shear(position, dis::Dislocation) = b1g_shear( position - DislocationOrigin(dis), BurgersVector(dis) )
+b1g_shear(position, dis::Dislocation) = b1g_shear( position - dislocationorigin(dis), burgersvector(dis) )
 
 @doc raw"""
     b2g_shear( eval_r::Vector2D, bob::Vector2D )
@@ -57,7 +57,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 @inline function b2g_shear( eval_r::Vector2D, bob::Vector2D )
     return -1/(2π) * ( xcomponent(eval_r) * ycomponent(eval_r) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
 end
-b2g_shear(position, dis::Dislocation) = b2g_shear( position - DislocationOrigin(dis), BurgersVector(dis) )
+b2g_shear(position, dis::Dislocation) = b2g_shear( position - dislocationorigin(dis), burgersvector(dis) )
 
 """
     bxg_shears(eval_r::Vector2D, bob::Vector2D; diff::Function, source_r::Vector2D = Vector2D(0.,0.)) -> Tuple{T, T} where {T <: Real}
@@ -92,7 +92,7 @@ function bxg_shears( eval_r::Vector2D, bob::Vector2D; diff::Function = Base.:(-)
     b2g = b2g_shear(disp, bob)
     return (b1g, b2g)
 end
-bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position, BurgersVector(dis); diff = diff, source_r = DislocationOrigin(dis) )
+bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position, burgersvector(dis); diff = diff, source_r = dislocationorigin(dis) )
 
 """
     Δsplitting(ε₁, ε₂)

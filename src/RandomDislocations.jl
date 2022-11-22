@@ -143,7 +143,8 @@ end
 
 Returns a random `Vector2D` that denotes the center of a plaquette for a dislocation origin.
 """
-rand_dislocation_source( ubv::UniformBurgersVector ) = Vector2D( ( 0.5 + rand(ubv.random_position[1]), 0.5 + rand(ubv.random_position[2]) ) )
+rand_dislocation_source( ubv::UniformBurgersVector ) = Vector2D( map( x -> 0.5 + rand(x), ubv.random_position ) )
+# rand_dislocation_source( ubv::UniformBurgersVector ) = Vector2D( ( 0.5 + rand(ubv.random_position[1]), 0.5 + rand(ubv.random_position[2]) ) )
 
 """
     system_size( ubv::RandomDislocationDistribution )

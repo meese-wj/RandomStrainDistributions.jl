@@ -5,10 +5,10 @@ using RandomStrainDistributions
 
     let 
         @testset "Testing Random Dislocations" begin
-            ςon = 1/5000
+            ςon = 1/50
             Lx = 100
             Ly = Lx
-            rsd = RandomDislocationDistribution(; expected_num_dislocations = round(Int, ςon * Lx^2), Lx = Lx, Ly = Ly )
+            rsd = RandomDislocationDistribution(; concentration = ςon, Lx = Lx, Ly = Ly )
             all_dis = collect_dislocations(rsd)
             
             @testset "Topological charge sums to zero" begin
@@ -36,7 +36,15 @@ using RandomStrainDistributions
 
             @testset "All origins are unique" begin
                 # this makes sure no two dislocations sit on top of one another
-                @test length( unique( dislocationorigin.(all_dis[:]) ) ) == length(all_dis)
+                for idx ∈ eachindex(all_dis), jdx ∈ eachindex(all_dis)
+                    if dislocationorigin(all_dis[idx]) == dislocationorigin(all_dis[jdx]) && idx != jdx
+                        @show (idx, jdx)
+                        @show all_dis[idx]
+                        @show all_dis[jdx]
+                    end
+                end
+
+                @test length( unique( dislocationorigin.(all_dis) ) ) == length(all_dis)
             end
 
             @testset "All origins are within the grid" begin

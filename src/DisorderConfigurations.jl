@@ -58,8 +58,8 @@ function compute_strains!( sfd::ShearFromDislocations )
     for (xdx, ydx) ∈ collect( Iterators.product( UnitRange(1, sfd.axes[1]), UnitRange(1, sfd.axes[2]) ) )
         for disloc ∈ sfd.dislocations
             temp_r = Vector2D( Float64(xdx), Float64(ydx) )
-            b1g = PBCField( b1g_shear, temp_r, disloc, sfd.axes... )[1]
-            b2g = PBCField( b2g_shear, temp_r, disloc, sfd.axes... )[1]
+            b1g = PBCField_value( b1g_shear, temp_r, disloc, sfd.axes..., sfd.tolerance )
+            b2g = PBCField_value( b2g_shear, temp_r, disloc, sfd.axes..., sfd.tolerance )
             sfd.strain_fields[xdx, ydx, 1] += b1g
             sfd.strain_fields[xdx, ydx, 2] += b2g
         end
@@ -78,7 +78,7 @@ function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
     return nothing 
 end
 
-function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations, include_Δ = false, tolerance = sqrt(eps()) )
+function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()) )
     sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance )
     set_dislocations!(sfd, dislocations)
     generate_disorder!(disorder_field, sfd)

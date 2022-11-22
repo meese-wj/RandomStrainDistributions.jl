@@ -1,7 +1,7 @@
 import Base
 
 # Exports from Vector2D implementation
-export Vector2D, xcomponent, ycomponent
+export Vector2D, xcomponent, ycomponent, zerovector, eltype, show
 
 """
     struct Vector2D{T <: Real} <: PhysicalVector
@@ -14,6 +14,7 @@ struct Vector2D{T <: Real} <: PhysicalVector
     v2::T
 end
 
+Base.eltype(vec::Vector2D{T}) where T = T
 Base.show(io::IO, vec::Vector2D{T}) where T = Base.print(io, "Vector2D{$T}($(xcomponent(vec)), $(ycomponent(vec)))")
 Base.show(vec::Vector2D) = Base.show(stdout, vec)
 
@@ -100,6 +101,8 @@ Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )
 #= ========================================================================================= =#
 #  Interface requirement definitions.
 #= ========================================================================================= =#
+zerovector(vec::Vector2D{T}) where T = Vector2D(zero(T), zero(T))
+
 """
     Base.isequal(A::Vector2D, B::Vector2D)
 

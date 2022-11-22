@@ -6,7 +6,7 @@ module PhysicalVectors
 import Base
 
 # Exports from PhysicalVector interface
-export PhysicalVector, isequal, ⋅, dot, magnitude, magnitude2, normalize, unit
+export PhysicalVector, isequal, ⋅, dot, magnitude, magnitude2, normalize, unit, zerovector
 
 """
 This is an interface for vectors used in physics.
@@ -20,6 +20,7 @@ The only functions that the user must define for a
 * Addition:                       `Base.:+(vector1, vector2)`
 * Scalar Multiplication:          `Base.:*(scalar, vector)`
 * Scalar Product:                 `⋅(vector1, vector2) #\\cdot [tab]`
+* Zero Vector:                    `zerovector`
 
 The other exported functions are standard vector 
 operations which can be written in terms of those
@@ -86,6 +87,13 @@ Scalar product of two `PhysicalVector`s. This is also referred to as the `dot` p
 * This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
 """
 ⋅(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
+
+"""
+    zerovector(::PhysicalVector)
+
+Return a `PhysicalVector` of zeros of the appropriate type.
+"""
+zerovector(a::PhysicalVector) = error("No implementation defined for $(typeof(a)).") 
 
 #= ========================================================================================= =#
 #  These are functions that follow the interface but are not

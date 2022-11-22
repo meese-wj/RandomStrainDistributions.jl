@@ -104,30 +104,6 @@ Vector2D{T}(::UndefInitializer) where T = Vector2D( T(undef), T(undef) )
 zerovector(vec::Vector2D{T}) where T = Vector2D(zero(T), zero(T))
 
 """
-    Base.isequal(A::Vector2D, B::Vector2D)
-
-Vector2D _equality_ based on component-wise equality.
-
-# Additional Information
-Use this function for equality instead of `==`.
-
-# Examples
-
-```jldoctest
-julia> A = Vector2D(1., 2)
-Vector2D{Float64}(1.0, 2.0)
-
-julia> B = Vector2D(1, 2.)
-Vector2D{Float64}(1.0, 2.0)
-
-julia> isequal(A, B)
-true
-```
-"""
-Base.isequal(A::Vector2D{S}, B::Vector2D{T}) where {S, T} = ( xcomponent(A) == xcomponent(B) && ycomponent(A) == ycomponent(B) )
-# Base.isequal(A::Vector2D{S}, B::Vector2D{T}) where {S, T} = prod(A.vec .== B.vec)
-
-"""
     +(A::Vector2D, B::Vector2D) -> Vector2D
 
 Addition for `Vector2D`. Includes a copy constructor.

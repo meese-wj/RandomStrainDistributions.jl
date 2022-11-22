@@ -6,7 +6,7 @@ module PhysicalVectors
 import Base
 
 # Exports from PhysicalVector interface
-export PhysicalVector, isequal, ⋅, dot, magnitude, magnitude2, normalize, unit, zerovector
+export PhysicalVector, ⋅, dot, magnitude, magnitude2, normalize, unit, zerovector
 
 """
 This is an interface for vectors used in physics.
@@ -16,7 +16,6 @@ This is an interface for vectors used in physics.
 The only functions that the user must define for a
 `VectorType <: PhysicalVector` are:
 
-* Equality:                       `Base.isequal(vector1, vector2)`
 * Addition:                       `Base.:+(vector1, vector2)`
 * Scalar Multiplication:          `Base.:*(scalar, vector)`
 * Scalar Product:                 `⋅(vector1, vector2) #\\cdot [tab]`
@@ -36,19 +35,6 @@ above:
 * Unit:                           `unit(vector)`
 """
 abstract type PhysicalVector end
-
-"""
-# REQUIRED FOR `PhysicalVector` INTERFACE 
-
-    Base.isequal(A::PhysicalVector, B::PhysicalVector)
-
-Check for equality between two `PhysicalVector`s. 
-    
-# Additional Information 
-* Note that Base.:(==) is not used for issues with mutability and equality versus egality.
-* This function `error`s out in the default implementation to enforce its definition in subtypes of `PhysicalVector`.
-"""
-Base.isequal(A::PhysicalVector, B::PhysicalVector) = error("No implementation defined for vectors of type $(typeof(A)) and $(typeof(B)).")
 
 """
 # REQUIRED FOR `PhysicalVector` INTERFACE 

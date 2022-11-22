@@ -42,32 +42,25 @@ Generate a random dislocation by defining its Burgers vector and origin. Returns
 rand_dislocation( rbv::RandomDislocation, ::Type{T} = Dislocation2D{Float64} ) where T <: Dislocation = T( rand_burger_vector(rbv), rand_dislocation_source(rbv) )
 
 """
-    origin_already_present( idx, origin, all_dislocations )
+    origin_already_present( origin, all_dislocations )
 
-Determine if the `origin isa Vector2D` is already present within the `all_dislocations` array up until the `idx` element using `Vectors2d.isequal`.
+Determine if the `origin isa Vector2D` is already present within the `all_dislocations` array using `∈`.
 """
-function origin_already_present( idx, origin, all_dislocations )
-    if idx == 1
-        return false
-    end
-    already_here = false
-    for dis_idx ∈ 1:(idx-1)
-        already_here = isequal( origin, dislocationorigin( all_dislocations[dis_idx] ) )
-        already_here ? break : continue
-    end
-    return already_here
+function origin_already_present( origin, all_dislocations )
+    return origin ∈ dislocationorigin.(all_dislocations)
 end
 
-function unique_origin(idx, origin, all_dislocations, rbv, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
+function unique_origin(origin, all_dislocations, rbv, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
     # Be sure that the same origin is not used multiple times
-    while origin_already_present( idx, origin, all_dislocations )
-        origin = dislocationorigin( rand_dislocation( rbv, T ) )
+    new_origin::typeof(origin) = origin
+    while origin_already_present( new_origin, all_dislocations )
+        new_origin = dislocationorigin( rand_dislocation( rbv, T ) )
     end
-    return origin
+    return new_origin
 end
 
 function set_dislocation!(all_dislocations, idx, dis::T, rbv::RandomDislocation) where T <: Dislocation
-    origin = unique_origin(idx, dislocationorigin(dis), all_dislocations, rbv, T)
+    origin = unique_origin(dislocationorigin(dis), all_dislocations, rbv, T)
     all_dislocations[idx] = T( burgersvector(dis), dislocationorigin(dis) )
     return nothing
 end
@@ -95,14 +88,13 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations, ::Type{
     for (old, new) ∈ zip( 1:unique_dislocations, (unique_dislocations + one(Int):num_dislocations) )
         old_burger = burgersvector(all_dislocations[old])
         new_burger = -1 * old_burger
-        new_origin = unique_origin( new, dislocationorigin(all_dislocations[old]), all_dislocations, rbv, T )
+        new_origin = unique_origin( dislocationorigin(all_dislocations[old]), all_dislocations, rbv, T )
         set_dislocation!(all_dislocations, new, T(new_burger, new_origin), rbv)
     end
-
     return all_dislocations
 end
 
-const tetragonal_burgers_vectors = ( Vector2D(1., 0), Vector2D(-1., 0), Vector2D(0, 1.), Vector2D(0, -1.) )
+const tetragonal_burgers_vectors = ( Vector2D(1., 0), Vector2D(-1., -0.), Vector2D(0, 1.), Vector2D(-0., -1.) )
 
 """
 Struct containing uniform distribution for the Burger's vectors and their locations 

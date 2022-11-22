@@ -2,7 +2,7 @@ using StaticArrays
 import Base
 
 # Exports from Vector2D implementation
-export Vector2D, Vector2D!, isequal, add!, multiply!
+export Vector2D, Vector2D!, add!, multiply!
 
 """
 Wrapper around StaticArrays.MVector{2,T} for simpler use in 

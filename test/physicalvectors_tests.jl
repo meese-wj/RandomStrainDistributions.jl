@@ -6,13 +6,13 @@ using BenchmarkTools
     @testset "Normal Operations" begin
         A = Vector2D(1., 2.)
         B = Vector2D(3., 4.)
-        @test isequal(A + B, Vector2D(4., 6.))
+        @test A + B == Vector2D(4., 6.)
 
         @test A ⋅ B == 11 && dot(A, B) == A ⋅ B
-        @test isequal(2 * A, Vector2D(2., 4.)) && isequal(2 * A, A * 2)
-        @test isequal(A / 2, Vector2D(0.5, 1.))
+        @test 2 * A == Vector2D(2., 4.) && 2 * A == A * 2
+        @test A / 2 == Vector2D(0.5, 1.)
         @test magnitude2(B) == 25. && magnitude(B) == 5.
-        @test isequal(normalize(Vector2D(0., 20.)), Vector2D(0., 1.))
+        @test normalize(Vector2D(0., 20.)) == Vector2D(0., 1.)
     end
 
     @testset "Memory allocations" begin

@@ -95,10 +95,15 @@ end
 bxg_shears(position, dis::Dislocation; diff = Base.:(-)) = bxg_shears( position, burgersvector(dis); diff = diff, source_r = dislocationorigin(dis) )
 
 """
-    Δsplitting(ε₁, ε₂)
+    Δsplitting(ε₁, ε₂, [ratio = oneunit(ε₂)])
 
 Calculate the level-splitting Δ as the quadrature sum of the strains.
+
+!!! note 
+    In principle, there is no reason for the two strain fields to have a 
+    equal couplings. The optional paramter `ratio = λ₂ / λ₁` represents the 
+    relative strength of the elastic couplings `λ₁` and `λ₂`.  
 """
-@inline Δsplitting(ε₁, ε₂) = hypot(ε₁, ε₂)
+@inline Δsplitting(ε₁, ε₂, ratio = oneunit(ε₂)) = hypot(ε₁, ratio * ε₂)
     
 end # module ShearFunctions

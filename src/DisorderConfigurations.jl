@@ -29,8 +29,9 @@ Interface function that creates new field to store the result of `generate_disor
 generate_disorder( dis_config::DisorderConfiguration ) = error("No implementation has been defined for $(typeof(dis_config)).")
 
 mutable struct ShearFromDislocations{T <: Number} <: DisorderConfiguration
-    include_Δ::Bool
-    tolerance::T
+    const include_Δ::Bool
+    const coupling_ratio::T
+    const tolerance::T
     axes::Tuple{Int, Int}
     dislocations::Vector{Dislocation2D{T}}
     strain_fields::Array{T, 3}
@@ -43,10 +44,10 @@ _field_columns(b::Bool) = b ? 3 : 2
 
 Convenient keyword constructor for the `ShearFromDislocations` type. 
 """
-function ShearFromDislocations{T}( Lx, Ly, include_Δ::Bool = false, tolerance::T = sqrt(eps()) ) where T
+function ShearFromDislocations{T}( Lx, Ly, include_Δ::Bool = false, tolerance::T = sqrt(eps()), coupling_ratio::T = oneunit(T) ) where T
     axes = (Lx, Ly)
     dislocations = Vector{Dislocation2D{T}}[]
-    return ShearFromDislocations( include_Δ, tolerance, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
+    return ShearFromDislocations( include_Δ, coupling_ratio, tolerance, axes, dislocations, zeros(T, (axes..., _field_columns(include_Δ))) )
 end
 
 ShearFromDislocations(args...) = ShearFromDislocations{Float64}(args...)
@@ -65,7 +66,7 @@ function compute_strains!( sfd::ShearFromDislocations )
         end
 
         if include_Δ
-            sfd.strain_fields[xdx, ydx, 3] = Δsplitting( sfd.strain_fields[xdx, ydx, 1], sfd.strain_fields[xdx, ydx, 2] )
+            sfd.strain_fields[xdx, ydx, 3] = Δsplitting( sfd.strain_fields[xdx, ydx, 1], sfd.strain_fields[xdx, ydx, 2], sfd.coupling_ratio )
         end
     end
     return nothing

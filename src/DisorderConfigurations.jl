@@ -79,8 +79,8 @@ function generate_disorder!( disorder_field, sfd::ShearFromDislocations )
     return nothing 
 end
 
-function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()) )
-    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance )
+function generate_disorder!( disorder_field, Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()), coupling_ratio = 1.0 )
+    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance, coupling_ratio )
     set_dislocations!(sfd, dislocations)
     generate_disorder!(disorder_field, sfd)
 end
@@ -93,8 +93,8 @@ function generate_disorder( sfd::ShearFromDislocations )
     return disorder_fields
 end
 
-function generate_disorder(Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()) )
-    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance )
+function generate_disorder(Lx::Int, Ly::Int, dislocations; include_Δ = false, tolerance = sqrt(eps()), coupling_ratio = 1.0 )
+    sfd = ShearFromDislocations( Lx, Ly, include_Δ, tolerance, coupling_ratio )
     set_dislocations!(sfd, dislocations)
     disorder_fields = make_fields(sfd)
     generate_disorder!(disorder_fields, sfd)

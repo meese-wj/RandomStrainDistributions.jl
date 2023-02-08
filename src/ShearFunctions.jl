@@ -16,10 +16,16 @@ Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bo
 # Additional Information
 * The edge dislocation is aligned along the ``z`` axis at the origin.
 * This is in units of ``1/(1-σ)`` for a Poisson ratio ``σ``.
-* This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
 
 ```math
-ε_{B_{1g}}^{(2 - {\rm Fe})} = \partial_y u_x + \partial_x u_y = ε_{xy}^{(1-{\rm Fe})}.
+ =  =  .
+\begin{aligned}
+ε_{B_{1g}} &= ε_{xx} - ε_{yy}
+\\
+&= \partial_x u_x - \partial_y u_y
+\\
+&= -\frac{ (\mathbf{b} \cdot \mathbf{r}) \cdot 2xy }{2πr^4}.
+\end{aligned}
 ```
 
 # Examples
@@ -29,7 +35,7 @@ julia> b1g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 @inline function b1g_shear( eval_r::Vector2D, bob::Vector2D )
-    return 1/(2π) * ( ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return -(bob ⋅ eval_r) * ( 2 * xcomponent(eval_r) * ycomponent(eval_r) ) / ( 2π * magnitude2(eval_r)^2 )
 end
 b1g_shear(position, dis::Dislocation) = b1g_shear( position - dislocationorigin(dis), burgersvector(dis) )
 
@@ -45,7 +51,13 @@ Calculate the ``B_{2g}`` from an edge dislocation for a given Burgers vector `bo
 * This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
 
 ```math
-ε_{B_{2g}}^{(2 - {\rm Fe})} = \frac{1}{2} \left(  \partial_x u_x - \partial_y u_y  \right) = \frac{1}{2} \left( ε_{xx}^{(1-{\rm Fe})} - ε_{yy}^{(1-{\rm Fe})} \right).
+\begin{aligned}
+ε_{B_{2g}} &= 2ε_{xy}
+\\
+&= \partial_y u_x + \partial_x u_y
+\\
+&= \frac{(\mathbf{b} \cdot \mathbf{r}) \cdot (x^2 - y^2) }{2πr^4}.
+\end{aligned}
 ```
 
 # Examples
@@ -55,7 +67,7 @@ julia> b2g_shear( Vector2D(1.,1.), Vector2D(1.,0.) )
 ```
 """
 @inline function b2g_shear( eval_r::Vector2D, bob::Vector2D )
-    return -1/(2π) * ( xcomponent(eval_r) * ycomponent(eval_r) / magnitude2(eval_r) ) * (bob ⋅ eval_r) / magnitude2(eval_r)
+    return (bob ⋅ eval_r) * ( xcomponent(eval_r)^2 - ycomponent(eval_r)^2 ) / ( 2π * magnitude2(eval_r)^2 )
 end
 b2g_shear(position, dis::Dislocation) = b2g_shear( position - dislocationorigin(dis), burgersvector(dis) )
 

@@ -18,7 +18,6 @@ Calculate the ``B_{1g}`` from an edge dislocation for a given Burgers vector `bo
 * This is in units of ``1/(1-σ)`` for a Poisson ratio ``σ``.
 
 ```math
- =  =  .
 \begin{aligned}
 ε_{B_{1g}} &= ε_{xx} - ε_{yy}
 \\
@@ -48,7 +47,6 @@ Calculate the ``B_{2g}`` from an edge dislocation for a given Burgers vector `bo
 # Additional Information
 * The edge dislocation is aligned along the ``z`` axis at the origin.
 * This is in units of ``1/(1-σ)`` for a Poisson ratio ``σ``.
-* This quantity is obtained for the 2-Fe crystallographic unit cell, however, it is computed within the 1-Fe basis.
 
 ```math
 \begin{aligned}

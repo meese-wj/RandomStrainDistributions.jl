@@ -2,7 +2,7 @@ using Distributions
 using ..PhysicalVectors
 using ..CrystalDefects
 
-export RandomDislocation, UniformBurgersVector, tetragonal_burgers_vectors
+export RandomDislocation, UniformBurgersVector, tetragonal_burgers_vectors, diagonal_burgers_vectors, combined_burgers_vectors
 
 """
 Interface type for the joint-distribution for the dislocations.
@@ -95,6 +95,14 @@ function collect_dislocations( rbv::RandomDislocation, num_dislocations, ::Type{
 end
 
 const tetragonal_burgers_vectors = ( Vector2D(1., 0), Vector2D(-1., -0.), Vector2D(0, 1.), Vector2D(-0., -1.) )
+const diagonal_burgers_vectors = (
+	Vector2D(1/sqrt(2), 1/sqrt(2)),
+	Vector2D(-1/sqrt(2), -1/sqrt(2)),
+	Vector2D(-1/sqrt(2), 1/sqrt(2)),
+	Vector2D(1/sqrt(2), -1/sqrt(2)),
+)
+
+const combined_burgers_vectors = (tetragonal_burgers_vectors..., diagonal_burgers_vectors...)
 
 """
 Struct containing uniform distribution for the Burger's vectors and their locations 

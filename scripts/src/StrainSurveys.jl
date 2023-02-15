@@ -48,13 +48,9 @@ function main(params; seed = 42, prefix = "strain-survey", save_output = true)
     results = Dict("dislocations" => dislocations, "strains" => strain_fields)
 
     jld2name = savename(prefix, params, "jld2") |> datadir
-    csvname = savename(prefix, params, "csv") |> datadir
-
-    allfields = send_to_DataFrame(strain_fields, params)
     
     if save_output
         save(jld2name, results)
-        CSV.write(csvname, allfields)
     end
     return nothing 
 end

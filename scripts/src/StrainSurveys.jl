@@ -8,18 +8,23 @@ using CSV
 include("DrWatsonHelpers.jl")
 include("DistributionParameters.jl")
 
-function survey_trial(rsd, params)
-    dis_vectors = collect_dislocations(rsd)
-    strains = generate_disorder(params.Lx, params.Ly, dis_vectors; include_Δ = true, tolerance = params.rtol, coupling_ratio = params.cratio)
-    return dis_vectors, strains
+function survey_dislocations!(dislocations, rsd)
+    for trial ∈ eachindex(dislocations)
+        dislocations[trial] = collect_dislocations(rsd)
+    end
+    return dislocations
+end
+
+function survey_strains!(strain_fields, dislocations, params)
+    @inbounds Threads.@threads for trial ∈ eachindex(dislocations)
+        strain_fields[:, :, :, trial] .= generate_disorder(params.Lx, params.Ly, dislocations[trial]; include_Δ = true, tolerance = params.rtol, coupling_ratio = params.cratio)
+    end
+    return strain_fields
 end
 
 function survey!(dislocations, strain_fields, rsd, params)
-    @inbounds Threads.@threads for trial ∈ 1:params.nsamples
-        dis_vectors, strains = survey_trial(rsd, params)
-        append!(dislocations, dis_vectors)
-        strain_fields[:, :, :, trial] .= strains
-    end
+    survey_dislocations!(dislocations, rsd)
+    survey_strains!(strain_fields, dislocations, params)
     return nothing
 end
 
@@ -40,7 +45,7 @@ function main(params; seed = 42, prefix = "strain-survey", save_output = true)
                                           Lx = params.Lx, Ly = params.Ly, 
                                           burgers_vectors = tetragonal_burgers_vectors )
 
-    dislocations = Dislocation2D{typeof(params.cratio)}[]                                    
+    dislocations = Vector{Vector{Dislocation2D{typeof(params.cratio)}}}(undef, params.nsamples)                                  
     strain_fields = zeros(typeof(params.cratio), params.Lx, params.Ly, 3, params.nsamples)
 
     survey!(dislocations, strain_fields, rsd, params)

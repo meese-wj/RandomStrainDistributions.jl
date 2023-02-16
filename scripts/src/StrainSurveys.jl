@@ -8,24 +8,12 @@ using CSV
 include("DrWatsonHelpers.jl")
 include("DistributionParameters.jl")
 
-function survey_dislocations!(dislocations, rsd)
-    for trial ∈ eachindex(dislocations)
-        dislocations[trial] = collect_dislocations(rsd)
-    end
-    return dislocations
-end
-
-function survey_strains!(strain_fields, dislocations, params)
+function survey!(dislocations, strain_fields, rsd, params)
     @inbounds Threads.@threads for trial ∈ eachindex(dislocations)
+        dislocations[trial] = collect_dislocations(rsd)
         strain_fields[:, :, :, trial] .= generate_disorder(params.Lx, params.Ly, dislocations[trial]; include_Δ = true, tolerance = params.rtol, coupling_ratio = params.cratio)
     end
-    return strain_fields
-end
-
-function survey!(dislocations, strain_fields, rsd, params)
-    survey_dislocations!(dislocations, rsd)
-    survey_strains!(strain_fields, dislocations, params)
-    return nothing
+    return dislocations, strain_fields
 end
 
 function send_to_DataFrame(strain_fields, params)

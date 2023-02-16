@@ -6,7 +6,7 @@
 #SBATCH --mail-type=all
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --array=1-10
-#SBATCH --job-name=L-128
+#SBATCH --job-name=L-112
 #SBATCH -o %x-%A_%a.out
 #=
     pwd
@@ -34,7 +34,7 @@ nsamples = 2^13
 myLx = jobname_parser( jobname, "L", Int; connector = "-" )
 mynumber = ndis_vals[parse(Int, jobid)]
 
-params = DistributionParameters(; Lx = myLx, ndislocations = mynumber, nsamples = nsamples |> Int)
+params = DistributionParameters(; Lx = myLx, ndislocations = mynumber, rtol = 0.001, nsamples = nsamples |> Int)
 
 @time main( params; save_output = true )
 

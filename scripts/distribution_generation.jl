@@ -1,8 +1,8 @@
 #!/usr/bin/bash -l
-#SBATCH --time=50:00:00
+#SBATCH --time=05:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=5
-#SBATCH --mem=10g
+#SBATCH --cpus-per-task=16
+#SBATCH --mem-per-cpu=10g
 #SBATCH --mail-type=all
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --array=1-10
@@ -17,18 +17,24 @@
     exit
 =#
 
+using Pkg
+Pkg.activate(@__DIR__)
+
 include("src/StrainSurveys.jl")
 include("src/jobname_parser.jl")
 using Random
 
 Random.seed!(42)
 
-ndis_vals = 2 .^ UnitRange(1, ENV["SLURM_ARRAY_TASK_COUNT"])
+ndis_vals = 2 .^ UnitRange(1, parse(Int, ENV["SLURM_ARRAY_TASK_COUNT"]))
+@show jobname = ENV["SLURM_JOB_NAME"]
+@show jobid = ENV["SLURM_ARRAY_TASK_ID"]
 
-myLx = jobname_parser( ENV["SLURM_JOB_NAME"], "L", Int )
-mynumber = parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
+nsamples = 2^13
+myLx = jobname_parser( jobname, "L", Int; connector = "-" )
+mynumber = ndis_vals[parse(Int, jobid)]
 
-params = DistributionParameters(; Lx = myLx, ndislocations = mynumber, nsamples = 1e3 |> Int)
+params = DistributionParameters(; Lx = myLx, ndislocations = mynumber, nsamples = nsamples |> Int)
 
 @time main( params; save_output = true )
 

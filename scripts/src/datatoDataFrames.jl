@@ -5,6 +5,7 @@ using FileIO
 using Statistics
 using StatsBase: skewness, kurtosis
 include("StrainSurveys.jl")
+include("SpatialCorrelations.jl")
 
 abstract type AbstractStrainStatistic end
 name(stat::Type{<: AbstractStrainStatistic}, variable) = Symbol( String(stat |> Symbol) * String(variable) )
@@ -38,11 +39,16 @@ function load_dataset_names(dir)
     return names
 end
 
-function extract_single_DataFrame(filename, param_type::Type{<: SimulationParameters} = DistributionParameters )
+function read_results_parameters(filename, param_type::Type{<: SimulationParameters} = DistributionParameters)
     results = FileIO.load(filename)
     params = parse_savename(param_type, filename)
     colnames = [:L, :ndis, :rtol, :cratio, :nsamples]
     colvals  = [ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
+    return results, params, colnames, colvals
+end
+
+function extract_single_DataFrame(filename, param_type::Type{<: SimulationParameters} = DistributionParameters )
+    results, params, colnames, colvals = read_results_parameters(filename, param_type)
 
     # Get ndata
     nvals = length.(results["dislocations"])
@@ -58,7 +64,9 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
         append!(colvals, field_stats)
     end
 
-    return DataFrame(colvals, colnames)
+    scalar_df =  DataFrame(colvals, colnames)
+    corr_df = extract_single_Correlations(filename, param_type)
+    return hcat(scalar_df, corr_df)
 end
 
 function find_DataFrames(all_files, args...)

@@ -9,8 +9,8 @@ function convertToDataFrames(dir, filesavename)
     df = find_DataFrames(filenames)
     write_file = joinpath(dir, "DataFrames", filesavename)
     @info "Writing single DataFrame as $(write_file)"
-    CSV.write(df, write_file)
+    CSV.write(write_file, df)
     return df
 end
 
-@time convertToDataFrames(datadir(), "unit_cratio_sweep.csv")
+@time convertToDataFrames(datadir("Agate"), "unit_cratio_sweep.csv")

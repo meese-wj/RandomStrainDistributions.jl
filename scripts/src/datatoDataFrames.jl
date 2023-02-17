@@ -41,8 +41,8 @@ end
 function extract_single_DataFrame(filename, param_type::Type{<: SimulationParameters} = DistributionParameters )
     results = FileIO.load(filename)
     params = parse_savename(param_type, filename)
-    colnames = [:L, :ndis, :rtol, :cratio]
-    colvals  = [ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio] ]
+    colnames = [:L, :ndis, :rtol, :cratio, :nsamples]
+    colvals  = [ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
 
     # Get ndata
     nvals = length.(results["dislocations"])

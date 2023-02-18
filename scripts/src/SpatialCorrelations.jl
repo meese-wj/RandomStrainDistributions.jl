@@ -15,7 +15,7 @@ function realspaceCF(realspace_array; shift = true)
     fsCF = fourierspaceCF(realspace_array; shift)
     fsCF = shift ? ifftshift(fsCF) : fsCF
     # Always shift this one because there's no need to go back
-    rsCF = ifft(fsCF) |> fftshift
+    rsCF = ifft(fsCF) ./ length(fsCF) |> fftshift
     return rsCF
 end
 

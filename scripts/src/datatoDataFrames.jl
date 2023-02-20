@@ -42,6 +42,7 @@ function load_dataset_names(dir)
     for fl ∈ readdir(dir; join = true)
         fl |> isfile ? push!(names, fl) : nothing
     end
+    @info "$(length(names)) files found in $dir"
     return names
 end
 
@@ -83,10 +84,12 @@ end
 function find_DataFrames(all_files, args...; kwargs...)
     single_dfs = Vector{DataFrame}(undef, length(all_files))
 
+    @info "Calculating single DataFrames..."
     @inbounds Threads.@threads for idx ∈ eachindex(all_files)
         single_dfs[idx] = extract_single_DataFrame(all_files[idx], args...; kwargs...)
     end
 
+    @info "Concatenating DataFrames..."
     output_df = single_dfs[begin]
     @inbounds for df_idx ∈ eachindex(single_dfs)
         df_idx == oneunit(df_idx) ? continue : nothing

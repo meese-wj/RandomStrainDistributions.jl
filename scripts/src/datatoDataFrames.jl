@@ -4,6 +4,7 @@ using DataFrames
 using FileIO
 using Statistics
 using StatsBase: skewness, kurtosis
+using Distributions
 include("StrainSurveys.jl")
 include("SpatialCorrelations.jl")
 
@@ -16,15 +17,20 @@ struct Variance <: AbstractStrainStatistic end
 struct Skewness <: AbstractStrainStatistic end
 struct Kurtosis <: AbstractStrainStatistic end
 
+# Δ distribution fit 
+struct GammaDistFit <: AbstractStrainStatistic end
+
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
+GammaDistFit(x) = fit(Gamma, x)
 
 function cycleStatistics(x, varname)
     colnames = Symbol[]
-    colvals  = Vector{Real}[]
+    colvals  = []
     for stat ∈ subtypes(AbstractStrainStatistic)
+        stat === GammaDistFit && Symbol(varname) != :Δ ? continue : nothing
         push!(colnames, name(stat, varname))
         push!(colvals, [stat(x)])
     end
@@ -43,11 +49,11 @@ function read_results_parameters(filename, param_type::Type{<: SimulationParamet
     results = FileIO.load(filename)
     params = parse_savename(param_type, filename)
     colnames = [:L, :ndis, :rtol, :cratio, :nsamples]
-    colvals  = [ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
+    colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
     return results, params, colnames, colvals
 end
 
-function extract_single_DataFrame(filename, param_type::Type{<: SimulationParameters} = DistributionParameters )
+function extract_single_DataFrame(filename, param_type::Type{<: SimulationParameters} = DistributionParameters; correlations::Bool = true )
     results, params, colnames, colvals = read_results_parameters(filename, param_type)
 
     # Get ndata
@@ -64,16 +70,21 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
         append!(colvals, field_stats)
     end
 
+    # Collect DataFrame and include correlations (if correlations == true)
     scalar_df =  DataFrame(colvals, colnames)
-    corr_df = extract_single_Correlations(filename, param_type)
-    return hcat(scalar_df, corr_df)
+    if correlations
+        corr_df = extract_single_Correlations(filename, param_type)
+        scalar_df = hcat(scalar_df, corr_df)
+    end
+
+    return scalar_df
 end
 
-function find_DataFrames(all_files, args...)
+function find_DataFrames(all_files, args...; kwargs...)
     single_dfs = Vector{DataFrame}(undef, length(all_files))
 
     @inbounds Threads.@threads for idx ∈ eachindex(all_files)
-        single_dfs[idx] = extract_single_DataFrame(all_files[idx], args...)
+        single_dfs[idx] = extract_single_DataFrame(all_files[idx], args...; kwargs...)
     end
 
     output_df = single_dfs[begin]

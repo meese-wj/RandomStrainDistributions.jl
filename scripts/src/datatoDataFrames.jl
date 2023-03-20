@@ -25,7 +25,7 @@ struct HistogramFit <: AbstractSplittingStatistic end
 struct GammaDistFit <: AbstractSplittingStatistic end
 struct χ2GammaDistFit <: AbstractSplittingStatistic end
 
-const HISTBINS::Int = 16
+const HISTBINS::Int = 64
 
 Mean(x) = mean(x)
 Variance(x) = var(x)

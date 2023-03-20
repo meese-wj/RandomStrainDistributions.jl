@@ -6,36 +6,49 @@ using Statistics
 using StatsBase: skewness, kurtosis
 using Distributions
 include("StrainSurveys.jl")
+include("ChiSqGoF.jl")
 include("SpatialCorrelations.jl")
 
 abstract type AbstractStrainStatistic end
+abstract type AbstractCyclableStatistic <: AbstractStrainStatistic end
+abstract type AbstractSplittingStatistic <: AbstractStrainStatistic end
 name(stat::Type{<: AbstractStrainStatistic}, variable) = Symbol( String(stat |> Symbol) * String(variable) )
 
 # Cumulant expressions
-struct Mean <: AbstractStrainStatistic end
-struct Variance <: AbstractStrainStatistic end
-struct Skewness <: AbstractStrainStatistic end
-struct Kurtosis <: AbstractStrainStatistic end
+struct Mean <: AbstractCyclableStatistic end
+struct Variance <: AbstractCyclableStatistic end
+struct Skewness <: AbstractCyclableStatistic end
+struct Kurtosis <: AbstractCyclableStatistic end
 
-# Δ distribution fit 
-struct GammaDistFit <: AbstractStrainStatistic end
+# Δ distribution fit (these aren't cyclable because they only apply for Δ)
+struct HistogramFit <: AbstractSplittingStatistic end
+struct GammaDistFit <: AbstractSplittingStatistic end
+struct χ2GammaDistFit <: AbstractSplittingStatistic end
+
+const HISTBINS::Int = 16
 
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
+HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins)
 GammaDistFit(x) = fit(Gamma, x)
+χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))
 
-function cycleStatistics(x, varname)
+function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic})
+    (varname !== :Δ && stattype === AbstractSplittingStatistic) && throw(MethodError(computeStatistics, (x, varname, stattype)))
+
     colnames = Symbol[]
     colvals  = []
-    for stat ∈ subtypes(AbstractStrainStatistic)
-        stat === GammaDistFit && Symbol(varname) != :Δ ? continue : nothing
+    for stat ∈ subtypes(stattype)
         push!(colnames, name(stat, varname))
         push!(colvals, [stat(x)])
     end
     return colnames, colvals
 end
+
+cycleStatistics(x, varname) = computeStatistics(x, varname, AbstractCyclableStatistic)
+splittingStatistics(x) = computeStatistics(x, :Δ, AbstractSplittingStatistic)
 
 function load_dataset_names(dir)
     names = String[]
@@ -49,8 +62,8 @@ end
 function read_results_parameters(filename, param_type::Type{<: SimulationParameters} = DistributionParameters)
     results = FileIO.load(filename)
     params = parse_savename(param_type, filename)
-    colnames = [:L, :ndis, :rtol, :cratio, :nsamples]
-    colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
+    colnames = [:L, :ndis, :con, :rtol, :cratio, :nsamples]
+    colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [concentration(params)], [params.rtol], [params.cratio], [params.nsamples] ]
     return results, params, colnames, colvals
 end
 
@@ -63,13 +76,18 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
     append!(colnames, n_names)
     append!(colvals, n_vals)
 
-    # Get fields data
+    # Get cycleable fields data
     fields_df = send_to_DataFrame(results["strains"], params)
     for field ∈ names(fields_df)
         field_names, field_stats = cycleStatistics(fields_df[!, field], field)
         append!(colnames, field_names)
         append!(colvals, field_stats)
     end
+
+    # Get splitting data
+    Δnames, Δstats = splittingStatistics(fields_df[!, :Δ])
+    append!(colnames, Δnames)
+    append!(colvals, Δstats)
 
     # Collect DataFrame and include correlations (if correlations == true)
     scalar_df =  DataFrame(colvals, colnames)

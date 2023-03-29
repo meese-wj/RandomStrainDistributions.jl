@@ -1,4 +1,5 @@
 
+using InteractiveUtils # for subtypes()
 using DrWatson
 using DataFrames
 using FileIO

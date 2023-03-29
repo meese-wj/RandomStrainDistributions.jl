@@ -1,5 +1,6 @@
 #!/usr/bin/bash -l
 #SBATCH --time=23:30:00
+#SBATCH --partition=msibigmem
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=60
 #SBATCH --mem-per-cpu=15g

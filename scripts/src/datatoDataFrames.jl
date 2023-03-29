@@ -7,36 +7,63 @@ using Statistics
 using StatsBase: skewness, kurtosis
 using Distributions
 include("StrainSurveys.jl")
+include("ChiSqGoF.jl")
 include("SpatialCorrelations.jl")
 
 abstract type AbstractStrainStatistic end
+abstract type AbstractCyclableStatistic <: AbstractStrainStatistic end
+abstract type AbstractSplittingStatistic <: AbstractStrainStatistic end
 name(stat::Type{<: AbstractStrainStatistic}, variable) = Symbol( String(stat |> Symbol) * String(variable) )
 
 # Cumulant expressions
-struct Mean <: AbstractStrainStatistic end
-struct Variance <: AbstractStrainStatistic end
-struct Skewness <: AbstractStrainStatistic end
-struct Kurtosis <: AbstractStrainStatistic end
+struct Mean <: AbstractCyclableStatistic end
+struct Variance <: AbstractCyclableStatistic end
+struct Skewness <: AbstractCyclableStatistic end
+struct Kurtosis <: AbstractCyclableStatistic end
 
-# Δ distribution fit 
-struct GammaDistFit <: AbstractStrainStatistic end
+# Δ distribution fit (these aren't cyclable because they only apply for Δ)
+struct HistogramFit <: AbstractSplittingStatistic end
+struct NormHistogramFit <: AbstractSplittingStatistic end
+struct GammaDistFit <: AbstractSplittingStatistic end
+struct PseudoRayleighFit <: AbstractSplittingStatistic end
+struct χ2GammaDistFit <: AbstractSplittingStatistic end
+struct χ2PseudoRayleighFit <: AbstractSplittingStatistic end
+struct GammaDistcV <: AbstractSplittingStatistic end
+struct PseudoRayleighcV <: AbstractSplittingStatistic end
+struct HistogramcV <: AbstractSplittingStatistic end
+
+const HISTBINS::Int = 64
 
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
+HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = false)
+NormHistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
 GammaDistFit(x) = fit(Gamma, x)
+PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
+χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))
+χ2PseudoRayleighFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, pseudo_rayleigh_distribution(PseudoRayleighFit(x).param))
+GammaDistcV(x) = fitcV(x, GammaDistFit(x))
+PseudoRayleighcV(x) = fitcV(x, pseudo_rayleigh_distribution(PseudoRayleighFit(x).param))
+HistogramcV(x, nbins = HISTBINS) = histcV(x, nbins)
 
-function cycleStatistics(x, varname)
+# SCROLL DOWN FOR similarity_coeff ETC.
+
+function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic})
+    (varname !== :Δ && stattype === AbstractSplittingStatistic) && throw(MethodError(computeStatistics, (x, varname, stattype)))
+
     colnames = Symbol[]
     colvals  = []
-    for stat ∈ subtypes(AbstractStrainStatistic)
-        stat === GammaDistFit && Symbol(varname) != :Δ ? continue : nothing
+    for stat ∈ subtypes(stattype)
         push!(colnames, name(stat, varname))
         push!(colvals, [stat(x)])
     end
     return colnames, colvals
 end
+
+cycleStatistics(x, varname) = computeStatistics(x, varname, AbstractCyclableStatistic)
+splittingStatistics(x) = computeStatistics(x, :Δ, AbstractSplittingStatistic)
 
 function load_dataset_names(dir)
     names = String[]
@@ -50,8 +77,8 @@ end
 function read_results_parameters(filename, param_type::Type{<: SimulationParameters} = DistributionParameters)
     results = FileIO.load(filename)
     params = parse_savename(param_type, filename)
-    colnames = [:L, :ndis, :rtol, :cratio, :nsamples]
-    colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [params.rtol], [params.cratio], [params.nsamples] ]
+    colnames = [:L, :ndis, :con, :rtol, :cratio, :nsamples]
+    colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [concentration(params)], [params.rtol], [params.cratio], [params.nsamples] ]
     return results, params, colnames, colvals
 end
 
@@ -64,7 +91,7 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
     append!(colnames, n_names)
     append!(colvals, n_vals)
 
-    # Get fields data
+    # Get cycleable fields data
     fields_df = send_to_DataFrame(results["strains"], params)
     for field ∈ names(fields_df)
         field_names, field_stats = cycleStatistics(fields_df[!, field], field)
@@ -72,9 +99,26 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
         append!(colvals, field_stats)
     end
 
+    # Get splitting data
+    Δnames, Δstats = splittingStatistics(fields_df[!, :Δ])
+    append!(colnames, Δnames)
+    append!(colvals, Δstats)
+
     # Collect DataFrame and include correlations (if correlations == true)
     scalar_df =  DataFrame(colvals, colnames)
+    # cV comparisons
+    gammacV = scalar_df[!, :GammaDistcVΔ][1]
+    rayleighcV = scalar_df[!, :PseudoRayleighcVΔ][1]
+    histcV = scalar_df[!, :HistogramcVΔ][1]
+    cVdf = DataFrame( [ [rmse(gammacV..., histcV[2])], [similarity_coeff(gammacV..., histcV[2])],
+                        [rmse(rayleighcV..., histcV[2])], [similarity_coeff(rayleighcV..., histcV[2])] ], 
+                      [:GammacVRMSEΔ, :GammacVSimCoeffΔ,
+                       :PseudoRayleighcVRMSEΔ, :PseudoRayleighcVSimCoeffΔ] )
+    scalar_df = hcat(scalar_df, cVdf )
+
     if correlations
+        crosscorr_df = extract_cross_Correlations(filename, param_type)
+        scalar_df = hcat(scalar_df, crosscorr_df)
         corr_df = extract_single_Correlations(filename, param_type)
         scalar_df = hcat(scalar_df, corr_df)
     end

@@ -1,3 +1,20 @@
+#!/usr/bin/bash -l
+#SBATCH --time=23:30:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=60
+#SBATCH --mem-per-cpu=15g
+#SBATCH --mail-type=all
+#SBATCH --mail-user=meese022@umn.edu
+#SBATCH --job-name=ToData
+#SBATCH -o %x-%A.out
+#=
+    pwd
+    echo $SLURM_NPROCS
+    echo $SLURM_CPUS_PER_TASK
+    echo
+    srun julia --threads=$SLURM_CPUS_PER_TASK convertToDataFrames.jl
+    exit
+=#
 
 using DrWatson
 using JLD2

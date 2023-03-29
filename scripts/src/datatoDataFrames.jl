@@ -22,8 +22,14 @@ struct Kurtosis <: AbstractCyclableStatistic end
 
 # Δ distribution fit (these aren't cyclable because they only apply for Δ)
 struct HistogramFit <: AbstractSplittingStatistic end
+struct NormHistogramFit <: AbstractSplittingStatistic end
 struct GammaDistFit <: AbstractSplittingStatistic end
+struct PseudoRayleighFit <: AbstractSplittingStatistic end
 struct χ2GammaDistFit <: AbstractSplittingStatistic end
+struct χ2PseudoRayleighFit <: AbstractSplittingStatistic end
+struct GammaDistcV <: AbstractSplittingStatistic end
+struct PseudoRayleighcV <: AbstractSplittingStatistic end
+struct HistogramcV <: AbstractSplittingStatistic end
 
 const HISTBINS::Int = 64
 
@@ -31,9 +37,17 @@ Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
-HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins)
+HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = false)
+NormHistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
 GammaDistFit(x) = fit(Gamma, x)
+PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
 χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))
+χ2PseudoRayleighFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, pseudo_rayleigh_distribution(PseudoRayleighFit(x).param))
+GammaDistcV(x) = fitcV(x, GammaDistFit(x))
+PseudoRayleighcV(x) = fitcV(x, pseudo_rayleigh_distribution(PseudoRayleighFit(x).param))
+HistogramcV(x, nbins = HISTBINS) = histcV(x, nbins)
+
+# SCROLL DOWN FOR similarity_coeff ETC.
 
 function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic})
     (varname !== :Δ && stattype === AbstractSplittingStatistic) && throw(MethodError(computeStatistics, (x, varname, stattype)))
@@ -91,7 +105,19 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
 
     # Collect DataFrame and include correlations (if correlations == true)
     scalar_df =  DataFrame(colvals, colnames)
+    # cV comparisons
+    gammacV = scalar_df[!, :GammaDistcVΔ][1]
+    rayleighcV = scalar_df[!, :PseudoRayleighcVΔ][1]
+    histcV = scalar_df[!, :HistogramcVΔ][1]
+    cVdf = DataFrame( [ [rmse(gammacV..., histcV[2])], [similarity_coeff(gammacV..., histcV[2])],
+                        [rmse(rayleighcV..., histcV[2])], [similarity_coeff(rayleighcV..., histcV[2])] ], 
+                      [:GammacVRMSEΔ, :GammacVSimCoeffΔ,
+                       :PseudoRayleighcVRMSEΔ, :PseudoRayleighcVSimCoeffΔ] )
+    scalar_df = hcat(scalar_df, cVdf )
+
     if correlations
+        crosscorr_df = extract_cross_Correlations(filename, param_type)
+        scalar_df = hcat(scalar_df, crosscorr_df)
         corr_df = extract_single_Correlations(filename, param_type)
         scalar_df = hcat(scalar_df, corr_df)
     end

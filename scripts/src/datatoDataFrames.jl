@@ -1,11 +1,11 @@
 
-using InteractiveUtils # for subtypes()
 using DrWatson
 using DataFrames
 using FileIO
 using Statistics
 using StatsBase: skewness, kurtosis
 using Distributions
+include("recursive_subtypes.jl") # for fancy subtyping
 include("StrainSurveys.jl")
 include("ChiSqGoF.jl")
 include("SpatialCorrelations.jl")
@@ -29,6 +29,19 @@ struct DenseHistogramFit <: AbstractDenseHistogramFit end
 struct NormHistogramFit <: AbstractHistogramFit end
 struct DenseNormHistogramFit <: AbstractDenseHistogramFit end
 
+const HISTBINS::Int = 64
+default_num_bins(::AbstractHistogramFit) = HISTBINS
+const DENSEHISTBINS::Int = 8 * HISTBINS
+default_num_bins(::AbstractDenseHistogramFit) = DENSEHISTBINS
+
+hist_normalized(::HistogramFit) = false
+hist_normalized(::DenseHistogramFit) = false
+hist_normalized(::NormHistogramFit) = true
+hist_normalized(::DenseNormHistogramFit) = true
+
+hist_density(::AbstractHistogramFit) = false
+hist_density(::AbstractDenseHistogramFit) = true
+
 struct GammaDistFit <: AbstractSplittingStatistic end
 struct PseudoRayleighFit <: AbstractSplittingStatistic end
 struct χ2GammaDistFit <: AbstractSplittingStatistic end
@@ -37,19 +50,25 @@ struct GammaDistcV <: AbstractSplittingStatistic end
 struct PseudoRayleighcV <: AbstractSplittingStatistic end
 struct HistogramcV <: AbstractSplittingStatistic end
 
-const HISTBINS::Int = 64
-default_num_bins(::AbstractHistogramFit) = HISTBINS
-const DENSEHISTBINS::Int = 8 * HISTBINS
-default_num_bins(::AbstractDenseHistogramFit) = DENSEHISTBINS
-
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
-HistogramFit(x) = histogram_fit(x, default_num_bins(HistogramFit()); normalize = false)
-DenseHistogramFit(x) = histogram_fit(x, default_num_bins(DenseHistogramFit()); normalize = false)
-NormHistogramFit(x) = histogram_fit(x, default_num_bins(NormHistogramFit()); normalize = true, density = true)
-DenseNormHistogramFit(x) = histogram_fit(x, default_num_bins(DenseNormHistogramFit()); normalize = true, density = true)
+
+# Histograms -- generate their own constructors based on traits
+# This will in principle make it less likely for me to mess stuff up...
+for hist_type ∈ recursive_subtypes(AbstractHistogramFit)
+    if isconcretetype(hist_type)
+        hist_symb = Symbol(hist_type)
+        quote 
+            $(hist_symb)(x) = histogram_fit(x, default_num_bins( $(hist_symb)() ); 
+                                            normalize = hist_normalized( $(hist_symb)() ), 
+                                            density = hist_density( $(hist_symb)() ) )
+        end |> eval
+    end
+end
+
+# DenseNormHistogramFit(x) = histogram_fit(x, default_num_bins(DenseNormHistogramFit()); normalize = true, density = true)
 GammaDistFit(x) = fit(Gamma, x)
 PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
 χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))

@@ -22,10 +22,13 @@ struct Skewness <: AbstractCyclableStatistic end
 struct Kurtosis <: AbstractCyclableStatistic end
 
 # Δ distribution fit (these aren't cyclable because they only apply for Δ)
-struct HistogramFit <: AbstractSplittingStatistic end
-struct DenseHistogramFit <: AbstractSplittingStatistic end
-struct NormHistogramFit <: AbstractSplittingStatistic end
-struct DenseNormHistogramFit <: AbstractSplittingStatistic end
+abstract type AbstractHistogramFit <: AbstractSplittingStatistic end
+abstract type AbstractDenseHistogramFit <: AbstractHistogramFit end
+struct HistogramFit <: AbstractHistogramFit end
+struct DenseHistogramFit <: AbstractDenseHistogramFit end
+struct NormHistogramFit <: AbstractHistogramFit end
+struct DenseNormHistogramFit <: AbstractDenseHistogramFit end
+
 struct GammaDistFit <: AbstractSplittingStatistic end
 struct PseudoRayleighFit <: AbstractSplittingStatistic end
 struct χ2GammaDistFit <: AbstractSplittingStatistic end
@@ -35,16 +38,18 @@ struct PseudoRayleighcV <: AbstractSplittingStatistic end
 struct HistogramcV <: AbstractSplittingStatistic end
 
 const HISTBINS::Int = 64
+default_num_bins(::AbstractHistogramFit) = HISTBINS
 const DENSEHISTBINS::Int = 8 * HISTBINS
+default_num_bins(::AbstractDenseHistogramFit) = DENSEHISTBINS
 
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
-HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = false)
-DenseHistogramFit(x, nbins = DENSEHISTBINS) = histogram_fit(x, nbins; normalize = false)
-NormHistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
-DenseNormHistogramFit(x, nbins = DENSEHISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
+HistogramFit(x) = histogram_fit(x, default_num_bins(HistogramFit()); normalize = false)
+DenseHistogramFit(x) = histogram_fit(x, default_num_bins(DenseHistogramFit()); normalize = false)
+NormHistogramFit(x) = histogram_fit(x, default_num_bins(NormHistogramFit()); normalize = true, density = true)
+DenseNormHistogramFit(x) = histogram_fit(x, default_num_bins(DenseNormHistogramFit()); normalize = true, density = true)
 GammaDistFit(x) = fit(Gamma, x)
 PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
 χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))

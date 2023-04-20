@@ -34,13 +34,13 @@ default_num_bins(::AbstractHistogramFit) = HISTBINS
 const DENSEHISTBINS::Int = 8 * HISTBINS
 default_num_bins(::AbstractDenseHistogramFit) = DENSEHISTBINS
 
-hist_normalized(::HistogramFit) = false
-hist_normalized(::DenseHistogramFit) = false
+hist_normalized(::AbstractHistogramFit) = false
 hist_normalized(::NormHistogramFit) = true
 hist_normalized(::DenseNormHistogramFit) = true
 
 hist_density(::AbstractHistogramFit) = false
-hist_density(::AbstractDenseHistogramFit) = true
+hist_density(::NormHistogramFit) = true
+hist_density(::DenseNormHistogramFit) = true
 
 struct GammaDistFit <: AbstractSplittingStatistic end
 struct PseudoRayleighFit <: AbstractSplittingStatistic end

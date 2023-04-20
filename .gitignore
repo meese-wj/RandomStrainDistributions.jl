@@ -5,3 +5,5 @@
 /scripts/data
 /scripts/*.out
 /scripts/notebooks
+/scripts/papers
+/scripts/plots

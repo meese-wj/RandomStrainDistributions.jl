@@ -23,7 +23,9 @@ struct Kurtosis <: AbstractCyclableStatistic end
 
 # Δ distribution fit (these aren't cyclable because they only apply for Δ)
 struct HistogramFit <: AbstractSplittingStatistic end
+struct DenseHistogramFit <: AbstractSplittingStatistic end
 struct NormHistogramFit <: AbstractSplittingStatistic end
+struct DenseNormHistogramFit <: AbstractSplittingStatistic end
 struct GammaDistFit <: AbstractSplittingStatistic end
 struct PseudoRayleighFit <: AbstractSplittingStatistic end
 struct χ2GammaDistFit <: AbstractSplittingStatistic end
@@ -33,13 +35,16 @@ struct PseudoRayleighcV <: AbstractSplittingStatistic end
 struct HistogramcV <: AbstractSplittingStatistic end
 
 const HISTBINS::Int = 64
+const DENSEHISTBINS::Int = 8 * HISTBINS
 
 Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
 HistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = false)
+DenseHistogramFit(x, nbins = DENSEHISTBINS) = histogram_fit(x, nbins; normalize = false)
 NormHistogramFit(x, nbins = HISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
+DenseNormHistogramFit(x, nbins = DENSEHISTBINS) = histogram_fit(x, nbins; normalize = true, density = true)
 GammaDistFit(x) = fit(Gamma, x)
 PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
 χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))

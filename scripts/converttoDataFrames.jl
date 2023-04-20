@@ -13,9 +13,12 @@
     echo $SLURM_NPROCS
     echo $SLURM_CPUS_PER_TASK
     echo
-    srun julia --threads=$SLURM_CPUS_PER_TASK convertToDataFrames.jl
+    srun julia --threads=$SLURM_CPUS_PER_TASK converttoDataFrames.jl
     exit
 =#
+
+using Pkg
+Pkg.activate(@__DIR__)
 
 using DrWatson
 using JLD2

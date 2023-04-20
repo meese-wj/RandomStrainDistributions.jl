@@ -84,9 +84,11 @@ function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic
 
     colnames = Symbol[]
     colvals  = []
-    for stat ∈ subtypes(stattype)
-        push!(colnames, name(stat, varname))
-        push!(colvals, [stat(x)])
+    for stat ∈ recursive_subtypes(stattype)
+        if isconcretetype(stat)
+            push!(colnames, name(stat, varname))
+            push!(colvals, [stat(x)])
+        end
     end
     return colnames, colvals
 end

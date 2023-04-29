@@ -15,8 +15,8 @@ end
 function fourierspaceCCF(realspace_array1, realspace_array2; shift = true)
     arr1 = realspace_array1 .- mean(realspace_array1)
     arr2 = realspace_array2 .- mean(realspace_array2)
-    # Compute conjugate(arr) * arr 
-    ft = conj!( fft(arr1) ) * fft(arr2)
+    # Compute conjugate(arr) .* arr 
+    ft = conj!( fft(arr1) ) .* fft(arr2)
     ft = shift ? fftshift(ft) : ft
     return ft
 end

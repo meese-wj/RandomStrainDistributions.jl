@@ -21,8 +21,7 @@ struct Variance <: AbstractCyclableStatistic end
 struct Skewness <: AbstractCyclableStatistic end
 struct Kurtosis <: AbstractCyclableStatistic end
 
-# Δ distribution fit (these aren't cyclable because they only apply for Δ)
-abstract type AbstractHistogramFit <: AbstractSplittingStatistic end
+abstract type AbstractHistogramFit <: AbstractCyclableStatistic end
 abstract type AbstractDenseHistogramFit <: AbstractHistogramFit end
 struct HistogramFit <: AbstractHistogramFit end
 struct DenseHistogramFit <: AbstractDenseHistogramFit end
@@ -69,6 +68,7 @@ for hist_type ∈ recursive_subtypes(AbstractHistogramFit)
 end
 
 # DenseNormHistogramFit(x) = histogram_fit(x, default_num_bins(DenseNormHistogramFit()); normalize = true, density = true)
+# Δ distribution fit (these aren't cyclable because they only apply for Δ)
 GammaDistFit(x) = fit(Gamma, x)
 PseudoRayleighFit(x) = fit_pseudo_rayleigh(NormHistogramFit(x))
 χ2GammaDistFit(x, nbins = HISTBINS) = χsqGoFTest(x, nbins, GammaDistFit(x))
@@ -86,6 +86,7 @@ function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic
     colvals  = []
     for stat ∈ recursive_subtypes(stattype)
         if isconcretetype(stat)
+            @show name(stat, varname)
             push!(colnames, name(stat, varname))
             push!(colvals, [stat(x)])
         end

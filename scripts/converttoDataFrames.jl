@@ -2,7 +2,7 @@
 #SBATCH --time=23:30:00
 #SBATCH --partition=msibigmem
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=80
+#SBATCH --cpus-per-task=101
 #SBATCH --mem-per-cpu=15g
 #SBATCH --mail-type=all
 #SBATCH --mail-user=meese022@umn.edu
@@ -10,6 +10,8 @@
 #SBATCH -o %x-%A.out
 #=
     pwd
+    module swap julia julia/1.8.0
+    module list
     echo $SLURM_NPROCS
     echo $SLURM_CPUS_PER_TASK
     echo

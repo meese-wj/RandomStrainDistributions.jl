@@ -68,11 +68,33 @@ Convenient keyword constructor for the `RandomDislocationDistribution` struct wh
 * This keyword constructor assumes that the `RandomDislocation` is a `UniformBurgersVector`.
 * This does not use `StatsBase.Truncated` because it's about an order of magnitude slower than my version in `collect_dislocations`.
 """
-function RandomDislocationDistribution(; concentration, Lx, Ly = Lx, burgers_vectors = tetragonal_burgers_vectors )
+function RandomDislocationDistribution(; concentration, Lx, Ly = Lx, burgers_vectors = tetragonal_burgers_vectors, random_defect_number = true )
     
     bv_dist = UniformBurgersVector(; Lx = Lx, Ly = Ly, burgers_vectors = burgers_vectors )
 
     rand_num = Binomial( Lx * Ly, concentration )
+    if !random_defect_number
+        # If the number of defects is not random, then guarantee
+        # the output is always concentration * Lx * Ly 
+        num = round(Int, concentration * Lx * Ly)
+        if num ≤ one(num)
+            @warn "The requested number of (non-random) dislocations is $num ≤ 1. Changing to 2."
+            num = one(num) + one(num)
+        end
+        
+        if num ≥ Lx * Ly
+            new_num = isodd(Lx * Ly - 1) ? Lx * Ly - 2 : Lx * Ly - 1 
+            @warn "The requested number of (non-random) dislocations is $num ≥ Lx × Ly == $(Lx * Ly). Resetting to $(new_num) dislocations."
+            num = new_num
+        end
+
+        if isodd(num)
+            new_num = num == Lx * Ly - 1 ? num - one(num) : num + one(num)
+            @warn "The requested number of (non-random) dislocations is $num, which is odd. Changing to $new_num."
+            num = new_num
+        end
+        rand_num = DiscreteUniform(num, num) # guarantees that the "random" dislocation number is always num
+    end
 
     return RandomDislocationDistribution(  concentration,
                                            rand_num,
@@ -98,6 +120,7 @@ Alias call to the `RandomDislocation` `collect_dislocations` function.
 """
 function collect_dislocations( rdd::RandomDislocationDistribution )
     num_dis = rand(rdd.rand_num_dis)
+    
     while isodd(num_dis) 
         num_dis = rand(rdd.rand_num_dis) 
     end
@@ -105,6 +128,15 @@ function collect_dislocations( rdd::RandomDislocationDistribution )
     while num_dis == zero(typeof(num_dis)) || num_dis > system_size(rdd) || isodd(num_dis)
         num_dis = rand(rdd.rand_num_dis)
     end
+
+    # @show num_dis
+    # if !rdd.num_dis_random
+    #     while num_dis != rdd.rand_num_dis.a
+    #         @show num_dis
+    #         num_dis = rand(rdd.rand_num_dis)
+    #     end
+    # end
+
     return collect_dislocations( rdd.burgers_vector_dist, num_dis )
 end
 

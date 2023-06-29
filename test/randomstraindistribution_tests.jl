@@ -68,4 +68,22 @@ using RandomStrainDistributions
         end
     end
 
+    let 
+        @time @testset "Testing Non-Random Number of Dislocations" begin
+            con = 0.001
+            Lx = 100
+            Ly = 100
+
+            rdd = RandomDislocationDistribution(; concentration = con, Lx = Lx, Ly = Ly, random_defect_number = false)
+            num_dislocs = Int[]
+            for _ ∈ 1:10_000
+                dislocs = collect_dislocations(rdd)
+                push!(num_dislocs, length(dislocs))
+            end
+                
+            @test length(unique(num_dislocs)) == 1
+            @test unique(num_dislocs)[1] == con * Lx * Ly
+        end        
+    end
+
 end

@@ -86,7 +86,7 @@ function computeStatistics(x, varname, stattype::Type{<: AbstractStrainStatistic
     colvals  = []
     for stat ∈ recursive_subtypes(stattype)
         if isconcretetype(stat)
-            @show name(stat, varname)
+            #@show name(stat, varname)
             push!(colnames, name(stat, varname))
             push!(colvals, [stat(x)])
         end
@@ -124,35 +124,49 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
     append!(colvals, n_vals)
 
     # Get cycleable fields data
-    fields_df = send_to_DataFrame(results["strains"], params)
-    for field ∈ names(fields_df)
-        field_names, field_stats = cycleStatistics(fields_df[!, field], field)
-        append!(colnames, field_names)
-        append!(colvals, field_stats)
+    @info "Working on cycle-able statistics"
+    @time begin
+        fields_df = send_to_DataFrame(results["strains"], params)
+        for field ∈ names(fields_df)
+            field_names, field_stats = cycleStatistics(fields_df[!, field], field)
+            append!(colnames, field_names)
+            append!(colvals, field_stats)
+        end
     end
 
     # Get splitting data
-    Δnames, Δstats = splittingStatistics(fields_df[!, :Δ])
-    append!(colnames, Δnames)
-    append!(colvals, Δstats)
+    @info "Calculating level-splitting statsistics"
+    @time begin
+        Δnames, Δstats = splittingStatistics(fields_df[!, :Δ])
+        append!(colnames, Δnames)
+        append!(colvals, Δstats)
+    end
 
     # Collect DataFrame and include correlations (if correlations == true)
-    scalar_df =  DataFrame(colvals, colnames)
-    # cV comparisons
-    gammacV = scalar_df[!, :GammaDistcVΔ][1]
-    rayleighcV = scalar_df[!, :PseudoRayleighcVΔ][1]
-    histcV = scalar_df[!, :HistogramcVΔ][1]
-    cVdf = DataFrame( [ [rmse(gammacV..., histcV[2])], [similarity_coeff(gammacV..., histcV[2])],
-                        [rmse(rayleighcV..., histcV[2])], [similarity_coeff(rayleighcV..., histcV[2])] ], 
-                      [:GammacVRMSEΔ, :GammacVSimCoeffΔ,
-                       :PseudoRayleighcVRMSEΔ, :PseudoRayleighcVSimCoeffΔ] )
-    scalar_df = hcat(scalar_df, cVdf )
+    @info "Computing two-state specific heat comparisons"
+    @time begin 
+        scalar_df =  DataFrame(colvals, colnames)
+        # cV comparisons
+        gammacV = scalar_df[!, :GammaDistcVΔ][1]
+        rayleighcV = scalar_df[!, :PseudoRayleighcVΔ][1]
+        histcV = scalar_df[!, :HistogramcVΔ][1]
+        cVdf = DataFrame( [ [rmse(gammacV..., histcV[2])], [similarity_coeff(gammacV..., histcV[2])],
+                          [rmse(rayleighcV..., histcV[2])], [similarity_coeff(rayleighcV..., histcV[2])] ], 
+                          [:GammacVRMSEΔ, :GammacVSimCoeffΔ,
+                           :PseudoRayleighcVRMSEΔ, :PseudoRayleighcVSimCoeffΔ] )
+        scalar_df = hcat(scalar_df, cVdf )
+    end
 
     if correlations
-        crosscorr_df = extract_cross_Correlations(filename, param_type)
-        scalar_df = hcat(scalar_df, crosscorr_df)
-        corr_df = extract_single_Correlations(filename, param_type)
-        scalar_df = hcat(scalar_df, corr_df)
+        @info "Now working on spatial correlation functions..."
+        @time begin 
+            crosscorr_df = extract_cross_Correlations(filename, param_type)
+            scalar_df = hcat(scalar_df, crosscorr_df)
+            corr_df = extract_single_Correlations(filename, param_type)
+            scalar_df = hcat(scalar_df, corr_df)
+        end
+    else
+        @info "Skipping correlation calculations this time."
     end
 
     return scalar_df

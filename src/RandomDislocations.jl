@@ -39,7 +39,7 @@ rand_dislocation_source( rbv::RandomDislocation ) = error("No implementation def
 
 Generate a random dislocation by defining its Burgers vector and origin. Returns a [`Dislocation2D`](@ref).
 """
-rand_dislocation( rbv::RandomDislocation, ::Type{T} = Dislocation2D{Float64} ) where T <: Dislocation = T( rand_burger_vector(rbv), rand_dislocation_source(rbv) )
+rand_dislocation(rng,  rbv::RandomDislocation, ::Type{T} = Dislocation2D{Float64} ) where T <: Dislocation = T( rand_burger_vector(rng, rbv), rand_dislocation_source(rng, rbv) )
 
 """
     origin_already_present( origin, all_dislocations )
@@ -50,24 +50,24 @@ function origin_already_present( origin, all_dislocations )
     return origin ∈ dislocationorigin.(all_dislocations)
 end
 
-function unique_origin(origin, all_dislocations, rbv, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
+function unique_origin(origin, all_dislocations, rbv, rng, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
     # Be sure that the same origin is not used multiple times
     new_origin::typeof(origin) = origin
     while origin_already_present( new_origin, all_dislocations )
-        new_origin = dislocationorigin( rand_dislocation( rbv, T ) )
+        new_origin = dislocationorigin( rand_dislocation(rng, rbv, T ) )
     end
     return new_origin
 end
 
-function set_dislocation!(all_dislocations, idx, dis::T, rbv::RandomDislocation) where T <: Dislocation
-    origin = unique_origin(dislocationorigin(dis), all_dislocations, rbv, T)
+function set_dislocation!(all_dislocations, idx, dis::T, rbv::RandomDislocation, rng) where T <: Dislocation
+    origin = unique_origin(dislocationorigin(dis), all_dislocations, rbv, rng, T)
     all_dislocations[idx] = T( burgersvector(dis), dislocationorigin(dis) )
     return nothing
 end
 
-function generate_dislocation!(all_dislocations, idx, rbv::RandomDislocation, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
-    dis = rand_dislocation( rbv, T )
-    set_dislocation!(all_dislocations, idx, dis, rbv)    
+function generate_dislocation!(all_dislocations, idx, rbv::RandomDislocation, rng, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
+    dis = rand_dislocation( rng, rbv, T )
+    set_dislocation!(all_dislocations, idx, dis, rbv, rng)    
     return nothing
 end
 
@@ -78,18 +78,18 @@ Generate the set of dislocations. Only the first `num_dislocations ÷ 2` are *un
 `num_dislocations ÷ 2` always have opposite Burgers vectors to the first set such that the 
 total topological charge is zero.
 """
-function collect_dislocations( rbv::RandomDislocation, num_dislocations, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
+function collect_dislocations( rng, rbv::RandomDislocation, num_dislocations, ::Type{T} = Dislocation2D{Float64}) where T <: Dislocation
     all_dislocations = Vector{T}(undef, num_dislocations)
     unique_dislocations = num_dislocations ÷ 2
     for idx ∈ eachindex(1:unique_dislocations)
-        generate_dislocation!(all_dislocations, idx, rbv, T)
+        generate_dislocation!(all_dislocations, idx, rbv, rng, T)
     end
 
     for (old, new) ∈ zip( 1:unique_dislocations, (unique_dislocations + one(Int):num_dislocations) )
         old_burger = burgersvector(all_dislocations[old])
         new_burger = -1 * old_burger
-        new_origin = unique_origin( dislocationorigin(all_dislocations[old]), all_dislocations, rbv, T )
-        set_dislocation!(all_dislocations, new, T(new_burger, new_origin), rbv)
+        new_origin = unique_origin( dislocationorigin(all_dislocations[old]), all_dislocations, rbv, rng, T )
+        set_dislocation!(all_dislocations, new, T(new_burger, new_origin), rbv, rng)
     end
     return all_dislocations
 end
@@ -141,8 +141,8 @@ end
 
 Returns a random `Vector2D` for a Burger's vector according to the `ubv <: UniformBurgersVector` allowed Burgers vectors.
 """
-function rand_burger_vector( ubv::UniformBurgersVector )
-    index = rand( ubv.random_burger_vector )
+function rand_burger_vector(rng, ubv::UniformBurgersVector )
+    index = rand(rng, ubv.random_burger_vector )
     return ubv.burgers_vectors[index]    
 end
 
@@ -151,7 +151,7 @@ end
 
 Returns a random `Vector2D` that denotes the center of a plaquette for a dislocation origin.
 """
-rand_dislocation_source( ubv::UniformBurgersVector ) = Vector2D( map( x -> 0.5 + rand(x), ubv.random_position ) )
+rand_dislocation_source(rng, ubv::UniformBurgersVector ) = Vector2D( map( x -> 0.5 + rand(rng, x), ubv.random_position ) )
 
 """
     system_size( ubv::RandomDislocationDistribution )

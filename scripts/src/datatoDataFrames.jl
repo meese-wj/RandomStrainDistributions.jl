@@ -21,6 +21,7 @@ struct Mean <: AbstractCyclableStatistic end
 struct Variance <: AbstractCyclableStatistic end
 struct Skewness <: AbstractCyclableStatistic end
 struct Kurtosis <: AbstractCyclableStatistic end
+struct CoVariance <: AbstractCovariableStatistic end
 struct CoKurtosis <: AbstractCovariableStatistic end
 
 abstract type AbstractHistogramFit <: AbstractCyclableStatistic end
@@ -56,10 +57,14 @@ Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
 
+function covariance(x, y, mux, muy)
+    return mean( (tup) -> (tup[1] - mux) * (tup[2] - muy), zip(x, y) )
+end
+CoVariance(x, y) = covariance(x, y, mean(x), mean(y))
 function excess_cokurtosis(x, y, mux, muy)
     newx = copy(x) .- mux
     newy = copy(y) .- muy
-    return mean( @. newx^2 * newy^2 ) / ( mean( newx.^2 ) * mean( newy.^2 ) + 2mean( newx .* newy ) ) - oneunit(mux)
+    return mean( @. newx^2 * newy^2 ) / ( mean( newx.^2 ) * mean( newy.^2 ) + 2mean( newx .* newy )^2 ) - oneunit(mux)
 end
 excess_cokurtosis(x, y) = excess_cokurtosis( x, y, mean(x), mean(y) )
 CoKurtosis(x, y) = excess_cokurtosis(x, y)
@@ -117,9 +122,9 @@ function load_dataset_names(dir)
     return names
 end
 
-function read_results_parameters(filename, param_type::Type{<: SimulationParameters} = DistributionParameters)
+function read_results_parameters(filename, param_type::Type{<: SimulationParameters} = DistributionParameters, default_params = Dict(:random_ndis => true))
     results = FileIO.load(filename)
-    params = parse_savename(param_type, filename)
+    params = parse_savename(param_type, filename; defaults = default_params)
     colnames = [:L, :ndis, :con, :rtol, :cratio, :nsamples]
     colvals  = Vector{Any}[ [params.Lx], [params.ndislocations], [concentration(params)], [params.rtol], [params.cratio], [params.nsamples] ]
     return results, params, colnames, colvals
@@ -148,9 +153,10 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
     # Get covariance statistics
     @info "Calculating co-variable statistics"
     @time begin 
-        cokurt = CoKurtosis( fields[!, :B1g], fields[!, :B2g] )
-        push!(colnames, :CoKurtosisB1gB2g)
-        push!(colvals, cokurt)
+        covar = CoVariance( fields_df[!, :B1g], fields_df[!, :B2g] )
+        cokurt = CoKurtosis( fields_df[!, :B1g], fields_df[!, :B2g] )
+        append!(colnames, [:CoVarianceB1gB2g, :CoKurtosisB1gB2g])
+        append!(colvals, [[covar], [cokurt]])
     end
 
     # Get splitting data

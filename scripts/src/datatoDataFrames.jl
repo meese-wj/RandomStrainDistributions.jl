@@ -12,6 +12,7 @@ include("SpatialCorrelations.jl")
 
 abstract type AbstractStrainStatistic end
 abstract type AbstractCyclableStatistic <: AbstractStrainStatistic end
+abstract type AbstractCovariableStatistic <: AbstractStrainStatistic end
 abstract type AbstractSplittingStatistic <: AbstractStrainStatistic end
 name(stat::Type{<: AbstractStrainStatistic}, variable) = Symbol( String(stat |> Symbol) * String(variable) )
 
@@ -20,6 +21,7 @@ struct Mean <: AbstractCyclableStatistic end
 struct Variance <: AbstractCyclableStatistic end
 struct Skewness <: AbstractCyclableStatistic end
 struct Kurtosis <: AbstractCyclableStatistic end
+struct CoKurtosis <: AbstractCovariableStatistic end
 
 abstract type AbstractHistogramFit <: AbstractCyclableStatistic end
 abstract type AbstractDenseHistogramFit <: AbstractHistogramFit end
@@ -53,6 +55,15 @@ Mean(x) = mean(x)
 Variance(x) = var(x)
 Skewness(x) = skewness(x)
 Kurtosis(x) = kurtosis(x)
+
+function excess_cokurtosis(x, y, mux, muy)
+    newx = copy(x) .- mux
+    newy = copy(y) .- muy
+    return mean( @. newx^2 * newy^2 ) / ( mean( newx.^2 ) * mean( newy.^2 ) + 2mean( newx .* newy ) ) - oneunit(mux)
+end
+excess_cokurtosis(x, y) = excess_cokurtosis( x, y, mean(x), mean(y) )
+CoKurtosis(x, y) = excess_cokurtosis(x, y)
+
 
 # Histograms -- generate their own constructors based on traits
 # This will in principle make it less likely for me to mess stuff up...
@@ -132,6 +143,14 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
             append!(colnames, field_names)
             append!(colvals, field_stats)
         end
+    end
+
+    # Get covariance statistics
+    @info "Calculating co-variable statistics"
+    @time begin 
+        cokurt = CoKurtosis( fields[!, :B1g], fields[!, :B2g] )
+        push!(colnames, :CoKurtosisB1gB2g)
+        push!(colvals, cokurt)
     end
 
     # Get splitting data

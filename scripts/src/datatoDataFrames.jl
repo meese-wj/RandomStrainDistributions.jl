@@ -3,7 +3,8 @@ using DrWatson
 using DataFrames
 using FileIO
 using Statistics
-using StatsBase: skewness, kurtosis
+using StatsBase
+using LinearAlgebra
 using Distributions
 include("recursive_subtypes.jl") # for fancy subtyping
 include("StrainSurveys.jl")
@@ -23,6 +24,7 @@ struct Skewness <: AbstractCyclableStatistic end
 struct Kurtosis <: AbstractCyclableStatistic end
 struct CoVariance <: AbstractCovariableStatistic end
 struct CoKurtosis <: AbstractCovariableStatistic end
+struct CoHistogramFit <: AbstractCovariableStatistic end
 
 abstract type AbstractHistogramFit <: AbstractCyclableStatistic end
 abstract type AbstractDenseHistogramFit <: AbstractHistogramFit end
@@ -68,6 +70,7 @@ function excess_cokurtosis(x, y, mux, muy)
 end
 excess_cokurtosis(x, y) = excess_cokurtosis( x, y, mean(x), mean(y) )
 CoKurtosis(x, y) = excess_cokurtosis(x, y)
+CoHistogramFit(x, y) = LinearAlgebra.normalize(fit(Histogram, (x, y); nbins = HISTBINS * HISTBINS); mode = :pdf)
 
 
 # Histograms -- generate their own constructors based on traits
@@ -155,8 +158,9 @@ function extract_single_DataFrame(filename, param_type::Type{<: SimulationParame
     @time begin 
         covar = CoVariance( fields_df[!, :B1g], fields_df[!, :B2g] )
         cokurt = CoKurtosis( fields_df[!, :B1g], fields_df[!, :B2g] )
-        append!(colnames, [:CoVarianceB1gB2g, :CoKurtosisB1gB2g])
-        append!(colvals, [[covar], [cokurt]])
+        cohist = CoHistogramFit( fields_df[!, :B1g], fields_df[!, :B2g] )
+        append!(colnames, [:CoVarianceB1gB2g, :CoKurtosisB1gB2g, :CoHistogramFitB1gB2g])
+        append!(colvals, [[covar], [cokurt], [cohist]])
     end
 
     # Get splitting data

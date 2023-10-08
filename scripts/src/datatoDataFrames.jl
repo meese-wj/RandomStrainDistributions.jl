@@ -70,7 +70,7 @@ function excess_cokurtosis(x, y, mux, muy)
 end
 excess_cokurtosis(x, y) = excess_cokurtosis( x, y, mean(x), mean(y) )
 CoKurtosis(x, y) = excess_cokurtosis(x, y)
-CoHistogramFit(x, y) = LinearAlgebra.normalize(fit(Histogram, (x, y); nbins = HISTBINS * HISTBINS); mode = :pdf)
+CoHistogramFit(x, y) = LinearAlgebra.normalize(fit(Histogram, (x, y); nbins = DENSEHISTBINS); mode = :pdf)
 
 
 # Histograms -- generate their own constructors based on traits
